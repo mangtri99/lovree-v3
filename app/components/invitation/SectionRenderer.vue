@@ -1,4 +1,5 @@
 <script setup lang="ts">
+defineOptions({ name: 'SectionRenderer' })
 import { computed } from 'vue'
 import HeroSection from './sections/HeroSection.vue'
 import OpeningSection from './sections/OpeningSection.vue'

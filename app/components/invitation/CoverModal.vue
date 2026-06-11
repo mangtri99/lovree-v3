@@ -1,4 +1,5 @@
 <script setup lang="ts">
+defineOptions({ name: 'CoverModal' })
 defineProps<{ title: string; coupleName: string; guestName: string }>()
 defineEmits<{ open: [] }>()
 </script>
