@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import CoverModal from './CoverModal.vue'
 import MusicPlayer from './MusicPlayer.vue'
 import SectionRenderer from './SectionRenderer.vue'
@@ -18,6 +18,8 @@ function open() {
   if (import.meta.client) document.body.style.overflow = ''
 }
 onMounted(() => { if (!opened.value) document.body.style.overflow = 'hidden' })
+// restore scroll if the user navigates away before opening the cover
+onUnmounted(() => { document.body.style.overflow = '' })
 </script>
 
 <template>
