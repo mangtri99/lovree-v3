@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 const props = defineProps<{ src: string; playing: boolean }>()
 const audio = ref<HTMLAudioElement | null>(null)
 const muted = ref(false)
-watch(() => props.playing, (p) => { if (p) audio.value?.play().catch(() => {}) })
+function play() { audio.value?.play().catch(() => {}) }
+// The player mounts only after the cover opens, so `playing` is already true at
+// mount and the watcher (change-only) never fires — start playback on mount too.
+onMounted(() => { if (props.playing) play() })
+watch(() => props.playing, (p) => { if (p) play() })
 function toggle() {
   muted.value = !muted.value
   if (audio.value) audio.value.muted = muted.value
