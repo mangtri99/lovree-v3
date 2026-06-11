@@ -7,7 +7,9 @@ import { hashPassword } from '../../utils/password'
 const body = z.object({ email: z.string().email(), password: z.string().min(8), name: z.string().optional() })
 
 export default defineEventHandler(async (event) => {
-  const { email, password, name } = body.parse(await readBody(event))
+  const parsed = body.safeParse(await readBody(event))
+  if (!parsed.success) throw createError({ statusCode: 400, message: 'Invalid input' })
+  const { email, password, name } = parsed.data
   const db = useDb()
   const existing = await db.select().from(users).where(eq(users.email, email)).limit(1)
   if (existing.length) throw createError({ statusCode: 409, message: 'Email already registered' })

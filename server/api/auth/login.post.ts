@@ -7,7 +7,9 @@ import { verifyPassword } from '../../utils/password'
 const body = z.object({ email: z.string().email(), password: z.string().min(1) })
 
 export default defineEventHandler(async (event) => {
-  const { email, password } = body.parse(await readBody(event))
+  const parsed = body.safeParse(await readBody(event))
+  if (!parsed.success) throw createError({ statusCode: 400, message: 'Invalid input' })
+  const { email, password } = parsed.data
   const db = useDb()
   const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1)
   if (!user || !user.passwordHash || !(await verifyPassword(user.passwordHash, password))) {
