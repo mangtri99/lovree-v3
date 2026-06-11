@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { galleryItem } from './field-types'
 
+const safeUrl = z.string().refine((v) => v === '' || /^https?:\/\//i.test(v), 'must be an http(s) URL').default('')
+
 const heroSchema = z.object({
   title: z.string().default(''),
   coupleName: z.string().default(''),
@@ -27,7 +29,7 @@ const eventItemSchema = z.object({
   timeStart: z.string().default(''),
   timeEnd: z.string().default(''),
   venue: z.string().default(''),
-  mapsUrl: z.string().default(''),
+  mapsUrl: safeUrl,
 })
 const eventSchema = z.object({ events: z.array(eventItemSchema).default([]) })
 const countdownSchema = z.object({ targetDate: z.string().default('') })
@@ -43,7 +45,7 @@ const loveGiftSchema = z.object({
 })
 const gallerySchema = z.object({ items: z.array(galleryItem).default([]) })
 const closingSchema = z.object({ body: z.string().default('') })
-const socialLinkSchema = z.object({ label: z.string().default(''), url: z.string().default('') })
+const socialLinkSchema = z.object({ label: z.string().default(''), url: safeUrl })
 const infoSchema = z.object({
   phone: z.string().default(''),
   socials: z.array(socialLinkSchema).default([]),

@@ -24,4 +24,10 @@ describe('section registry', () => {
     const out = validateContent('gallery', { items: [{ type: 'youtube', videoId: 'dQw4w9WgXcQ' }] })
     expect(out.items[0]).toEqual({ type: 'youtube', videoId: 'dQw4w9WgXcQ' })
   })
+
+  it('rejects a javascript: url in event mapsUrl (falls back to defaults)', () => {
+    const out = validateContent('event', { events: [{ name: 'A', mapsUrl: 'javascript:alert(1)' }] })
+    // invalid url makes the blob fail validation -> full defaults (empty events)
+    expect(out.events).toEqual([])
+  })
 })
