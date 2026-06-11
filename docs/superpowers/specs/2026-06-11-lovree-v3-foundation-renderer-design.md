@@ -47,11 +47,13 @@ Data split:
 
 ```
 users
-  id            uuid pk
-  email         text unique not null
-  password_hash text not null
-  name          text
-  created_at    timestamptz default now()
+  id              uuid pk
+  email           text unique not null
+  password_hash   text             -- nullable: null for OAuth-only accounts
+  name            text
+  avatar_url      text
+  google_id       text unique      -- nullable: set when linked to Google
+  created_at      timestamptz default now()
 
 invitations
   id              uuid pk
@@ -223,9 +225,12 @@ Phase 1 ships **one** working theme end-to-end (seeded into `themes`).
 
 ## 8. Auth (Phase 0)
 
-- Email + password, `password_hash` (argon2/bcrypt) in `users`.
-- Server-side session (httpOnly cookie). Route protection middleware for `/admin/*`.
-- Phase 0 delivers: signup/login/logout endpoints + session + `/admin` route guard + a placeholder authed `/admin` dashboard page. Full admin UI/editor is Phase 2.
+- Two methods, both landing on the same `users` row + session:
+  - **Email + password** — `password_hash` (argon2/bcrypt). `password_hash` is null for OAuth-only accounts.
+  - **Google OAuth** — standard authorization-code flow. On callback, look up by `google_id`; else match an existing `users.email` and link `google_id` to it; else create a new user (pull `name`/`avatar_url` from the Google profile). `nuxt-auth-utils` (or equivalent) handles the OAuth handshake; client secret stays server-side in env.
+- Account linking: an existing email/password user who signs in with the same Google email gets `google_id` linked to their row (no duplicate account).
+- Server-side session (httpOnly cookie), shared by both methods. Route protection middleware for `/admin/*`.
+- Phase 0 delivers: signup/login/logout endpoints, Google OAuth login + callback, session + `/admin` route guard + a placeholder authed `/admin` dashboard page. Full admin UI/editor is Phase 2.
 - Ownership: `invitations.owner_id`. One account → many invitations. Draft visibility check in the renderer uses the session owner.
 
 ## 9. Storage Adapter (Phase 0)
@@ -251,5 +256,5 @@ Phase 1 ships **one** working theme end-to-end (seeded into `themes`).
 4. `?guest=<code>` personalizes the cover; unknown guest degrades gracefully.
 5. A `draft` invitation returns 404 to a non-owner and renders for the owner.
 6. Theme tokens (+ any seeded `token_overrides`) appear as CSS vars on the root and visibly drive colors/fonts.
-7. Auth: signup/login/logout work; `/admin` is gated by session.
+7. Auth: email/password signup/login/logout work; Google OAuth login works and links to an existing account on email match; `/admin` is gated by session.
 8. Adding a new section type in the registry + component makes it renderable with **zero** changes to renderer control flow.
