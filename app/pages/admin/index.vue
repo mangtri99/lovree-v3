@@ -11,7 +11,7 @@ async function logout() {
 <template>
   <div class="p-8">
     <h1 class="text-xl font-semibold">Dashboard</h1>
-    <p class="mt-2 text-gray-600">Masuk sebagai {{ (user as any)?.email }}</p>
+    <p class="mt-2 text-gray-600">Masuk sebagai {{ user?.email }}</p>
     <button class="mt-4 rounded border px-3 py-1" @click="logout">Keluar</button>
   </div>
 </template>
