@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, boolean, integer, jsonb, timestamp, unique } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, boolean, integer, jsonb, timestamp, unique, index } from 'drizzle-orm/pg-core'
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -38,7 +38,7 @@ export const sections = pgTable('sections', {
   enabled: boolean('enabled').notNull().default(true),
   content: jsonb('content').notNull().default({}),
   fieldOverrides: jsonb('field_overrides').notNull().default({}),
-})
+}, (t) => ({ byInvitationPos: index('sections_invitation_position_idx').on(t.invitationId, t.position) }))
 
 export const guests = pgTable('guests', {
   id: uuid('id').primaryKey().defaultRandom(),
