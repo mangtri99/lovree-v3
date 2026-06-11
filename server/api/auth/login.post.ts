@@ -4,7 +4,7 @@ import { useDb } from '../../db'
 import { users } from '../../db/schema'
 import { verifyPassword } from '../../utils/password'
 
-const body = z.object({ email: z.string().email(), password: z.string() })
+const body = z.object({ email: z.string().email(), password: z.string().min(1) })
 
 export default defineEventHandler(async (event) => {
   const { email, password } = body.parse(await readBody(event))
