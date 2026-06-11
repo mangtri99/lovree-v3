@@ -30,4 +30,10 @@ describe('resolveGoogleUser', () => {
     const u = await resolveGoogleUser({ sub: 'g3', email: 'c@x.com' }, deps)
     expect(u.id).toBe('new')
   })
+  it('rejects linking/creating when the Google email is not verified', async () => {
+    const deps = makeDeps([{ id: 'u4', email: 'd@x.com', googleId: null }])
+    await expect(
+      resolveGoogleUser({ sub: 'g4', email: 'd@x.com', emailVerified: false }, deps),
+    ).rejects.toThrow('google_email_not_verified')
+  })
 })

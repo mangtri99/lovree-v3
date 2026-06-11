@@ -17,10 +17,20 @@ export default defineOAuthGoogleEventHandler({
       },
     }
     const user = await resolveGoogleUser(
-      { sub: g.sub, email: g.email, name: g.name, picture: g.picture }, deps,
+      {
+        sub: g.sub,
+        email: g.email,
+        emailVerified: (g as { email_verified?: boolean }).email_verified,
+        name: g.name,
+        picture: g.picture,
+      },
+      deps,
     )
     await setUserSession(event, { user: { id: user.id, email: user.email } })
     return sendRedirect(event, '/admin')
   },
-  onError(event) { return sendRedirect(event, '/login?error=google') },
+  onError(event, error) {
+    console.error('Google OAuth failed:', error?.message)
+    return sendRedirect(event, '/login?error=google')
+  },
 })
