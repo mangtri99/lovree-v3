@@ -102,7 +102,7 @@ themes
 media
   id            uuid pk
   invitation_id uuid → invitations.id not null
-  type          text not null   -- image | video | audio
+  type          text not null   -- image | audio   (video is YouTube embed, not stored here)
   r2_key        text not null
   url           text not null
   meta          jsonb default '{}'  -- width/height/duration/etc
@@ -115,7 +115,7 @@ Notes:
 
 ### 4.2 JSONB shapes (validated by registry)
 
-- `sections.content` — values keyed by the section type's field schema. Example Hero: `{ "title": "...", "coupleName": "...", "date": "2026-09-01" }`. Example Gallery: `{ "items": [ { "mediaId": "...", "type": "image" } ] }`.
+- `sections.content` — values keyed by the section type's field schema. Example Hero: `{ "title": "...", "coupleName": "...", "date": "2026-09-01" }`. Example Gallery: `{ "items": [ { "type": "image", "mediaId": "..." }, { "type": "youtube", "videoId": "dQw4w9WgXcQ" } ] }`. **Video items store a YouTube video ID, not an R2 media reference** — videos are uploaded to YouTube and embedded.
 - `sections.field_overrides` — customer-added/removed generic fields (Phase 2 writes these; Phase 1 must tolerate them on read).
 - `invitations.token_overrides` — whitelisted token overrides layered above theme tokens.
 - `themes.tokens` — the theme's default token set (see §6).
@@ -145,10 +145,12 @@ sectionRegistry = {
 }
 
 // generic field types (used by field schemas + Phase 2 custom fields)
-fieldTypes = { text, longtext, image, date, list, url, ... }
+fieldTypes = { text, longtext, image, date, list, url, youtube, ... }
+// youtube = stores a YouTube video ID, rendered as an embed (no R2 upload)
 ```
 
 - Special items (countdown, Google Maps embed, video, RSVP, Love Gift) are **section types** for MVP, each with its own content schema and component. Generic "embed-as-field" is deferred to Phase 4.
+- **Video = YouTube embed.** Customers upload video to YouTube; the registry stores only a YouTube video ID and renders an `<iframe>` (lite-embed/facade for performance). No video files in R2. The `youtube` field type holds a video ID and is usable both as a standalone video section and as a Gallery item.
 - Adding a new section type or invitation type = add a registry entry + a component. No per-customer branching anywhere.
 
 ## 6. Design Tokens & Theming
@@ -212,7 +214,8 @@ Phase 1 ships **one** working theme end-to-end (seeded into `themes`).
 
 ### 7.4 Media
 
-- Image/video/audio URLs come from `media` (R2). Images use Nuxt Image for lazy loading + responsive `srcset` (mobile-first; invitation traffic is bursty on phones).
+- Image and audio URLs come from `media` (R2). Images use Nuxt Image for lazy loading + responsive `srcset` (mobile-first; invitation traffic is bursty on phones).
+- Video is a YouTube `<iframe>` embed rendered from a stored video ID (lite-embed facade: show thumbnail first, load the iframe on click to keep the page light).
 
 ### 7.5 Performance / caching
 
@@ -228,7 +231,7 @@ Phase 1 ships **one** working theme end-to-end (seeded into `themes`).
 ## 9. Storage Adapter (Phase 0)
 
 - Interface `StorageAdapter { put(key, body, contentType): {key, url}; url(key); delete(key) }`.
-- R2 implementation (S3-compatible SDK). Abstracted so a later swap (e.g. Cloudinary) touches one module.
+- R2 implementation (S3-compatible SDK). Abstracted so a later swap (e.g. Cloudinary) touches one module. Handles images + audio only; video lives on YouTube and is referenced by ID (no upload path needed).
 - Upload endpoints used by the editor are Phase 2; Phase 0 ships the adapter + a seed/utility path so themes/demo media can be referenced.
 
 ## 10. Out of Scope (this spec)
