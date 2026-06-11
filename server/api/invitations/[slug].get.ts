@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   if (!inv) throw createError({ statusCode: 404, message: 'Not found' })
 
   const session = await getUserSession(event)
-  const viewerId = (session as any)?.user?.id ?? null
+  const viewerId = session.user?.id ?? null
   if (!canView({ status: inv.status, ownerId: inv.ownerId! }, viewerId)) {
     throw createError({ statusCode: 404, message: 'Not found' })
   }
