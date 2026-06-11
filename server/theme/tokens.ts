@@ -28,7 +28,7 @@ function deepMerge(a: any, b: any) {
 function pickWhitelisted(overrides: any) {
   const out: any = {}
   for (const path of OVERRIDE_WHITELIST) {
-    const [group, key] = path.split('.')
+    const [group, key] = path.split('.') as [string, string]
     const val = overrides?.[group]?.[key]
     if (val !== undefined) (out[group] ??= {})[key] = val
   }
