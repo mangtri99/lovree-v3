@@ -12,7 +12,7 @@ function toggle() {
 <template>
   <div>
     <audio ref="audio" :src="src" loop />
-    <button v-if="playing" type="button" class="fixed bottom-4 right-4 z-40 rounded-full p-3 text-white shadow" style="background: var(--color-primary)" @click="toggle">
+    <button v-if="playing" type="button" :aria-label="muted ? 'Nyalakan musik' : 'Matikan musik'" class="fixed bottom-4 right-4 z-40 rounded-full p-3 text-white shadow" style="background: var(--color-primary)" @click="toggle">
       {{ muted ? '🔇' : '🔊' }}
     </button>
   </div>
