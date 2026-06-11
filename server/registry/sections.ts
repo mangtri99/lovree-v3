@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { galleryItem, youtubeId } from './field-types'
+import { galleryItem } from './field-types'
 
 const heroSchema = z.object({
   title: z.string().default(''),
