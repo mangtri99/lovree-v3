@@ -1,0 +1,1 @@
+CREATE INDEX "sections_invitation_position_idx" ON "sections" USING btree ("invitation_id","position");
