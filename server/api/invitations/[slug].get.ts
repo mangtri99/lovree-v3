@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
 
   // published invitations change rarely; cache + revalidate on save (Phase 2 invalidation)
   if (inv.status === 'published') {
-    setHeader(event, 'Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=600')
+    setHeader(event, 'Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=600')
     setHeader(event, 'ETag', publishedEtag(inv.id, inv.publishedAt))
   }
 
