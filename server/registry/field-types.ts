@@ -10,8 +10,7 @@ export const galleryItem = z.discriminatedUnion('type', [mediaImageItem, mediaYo
 // Document-stored gallery items are lenient so in-progress edits are never dropped.
 export const galleryImageItem = z.object({
   type: z.literal('image'),
-  mediaId: z.string().default(''),
-  url: z.string().default(''),
+  image: z.object({ mediaId: z.string().default(''), url: z.string().default('') }).default({ mediaId: '', url: '' }),
 })
 export const galleryYoutubeItem = z.object({
   type: z.literal('youtube'),

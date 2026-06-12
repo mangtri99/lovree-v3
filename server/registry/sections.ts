@@ -154,10 +154,10 @@ export const sectionRegistry = {
       items: {
         type: 'list' as const,
         label: 'Galeri',
-        defaultItem: { type: 'image', mediaId: '', url: '' },
+        defaultItem: { type: 'image', image: { mediaId: '', url: '' } },
         itemFields: {
           type: { type: 'text' as const, label: 'Tipe (image/youtube)' },
-          mediaId: { type: 'image' as const, label: 'Gambar' },
+          image: { type: 'image' as const, label: 'Gambar' },
           videoId: { type: 'youtube' as const, label: 'YouTube ID' },
         },
       },

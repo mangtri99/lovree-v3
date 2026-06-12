@@ -7,7 +7,7 @@ const stubs = { YouTubeEmbed: { name: 'YouTubeEmbed', props: ['videoId'], templa
 describe('GallerySection', () => {
   it('renders <img> with the stored url for image items', () => {
     const w = mount(GallerySection, {
-      props: { content: { items: [{ type: 'image', mediaId: 'm1', url: 'https://cdn/x.jpg' }] } },
+      props: { content: { items: [{ type: 'image', image: { mediaId: 'm1', url: 'https://cdn/x.jpg' } }] } },
       global: { stubs },
     })
     const img = w.find('img')
@@ -29,7 +29,7 @@ describe('GallerySection', () => {
 
   it('does not render an img for an image item with empty url', () => {
     const w = mount(GallerySection, {
-      props: { content: { items: [{ type: 'image', mediaId: '', url: '' }] } },
+      props: { content: { items: [{ type: 'image', image: { mediaId: '', url: '' } }] } },
       global: { stubs },
     })
     expect(w.find('img').exists()).toBe(false)
