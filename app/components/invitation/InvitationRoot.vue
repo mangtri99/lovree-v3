@@ -10,7 +10,10 @@ const props = defineProps<{
 }>()
 
 const opened = ref(false)
-const styleStr = computed(() => Object.entries(props.data.cssVars).map(([k, v]) => `${k}: ${v}`).join('; '))
+const styleStr = computed(() => {
+  const vars = Object.entries(props.data.cssVars).map(([k, v]) => `${k}: ${v}`).join('; ')
+  return `${vars}; font-family: var(--font-body)`
+})
 const hero = computed(() => props.data.sections.find((s) => s.type === 'hero')?.content ?? { title: '', coupleName: '' })
 
 function open() {

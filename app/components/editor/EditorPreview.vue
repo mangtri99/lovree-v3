@@ -13,7 +13,10 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ open: [] }>()
 
-const rootStyle = computed(() => Object.entries(props.cssVars).map(([k, v]) => `${k}: ${v}`).join('; '))
+const rootStyle = computed(() => {
+  const vars = Object.entries(props.cssVars).map(([k, v]) => `${k}: ${v}`).join('; ')
+  return `${vars}; font-family: var(--font-body)`
+})
 const frameStyle = computed(() => {
   const containment = 'transform: translateZ(0); contain: layout paint; overflow: auto; position: relative;'
   const width = props.device === 'mobile' ? 'width: 390px;' : 'width: 100%;'
