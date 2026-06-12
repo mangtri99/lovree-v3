@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { useDb } from './index'
 import { users, themes, invitations, guests, media } from './schema'
-import { hashPassword } from '../utils/password'
+import { hashUserPassword } from '../utils/password'
 import { SECTION_TYPES, defaultContent } from '../registry/sections'
 
 function seedContent(type: string, base: any) {
@@ -16,7 +16,7 @@ function seedContent(type: string, base: any) {
 async function main() {
   const db = useDb()
   const [owner] = await db.insert(users).values({
-    email: 'demo@lovree.com', passwordHash: await hashPassword('password123'), name: 'Demo Owner',
+    email: 'demo@lovree.com', passwordHash: await hashUserPassword('password123'), name: 'Demo Owner',
   }).returning()
   const [theme] = await db.insert(themes).values({
     name: 'Radiant Love',
