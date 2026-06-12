@@ -31,3 +31,28 @@ describe('section registry', () => {
     expect(out.events).toEqual([])
   })
 })
+
+describe('gallery resilient validation', () => {
+  it('drops malformed items but keeps the rest (section not reset)', () => {
+    const out = validateContent('gallery', {
+      items: [
+        { type: 'image', mediaId: 'm1', url: 'https://cdn/x.jpg' },
+        {},
+        { type: 'youtube', videoId: 'dQw4w9WgXcQ' },
+        { type: 'bogus' },
+      ],
+    })
+    expect(out.items).toEqual([
+      { type: 'image', mediaId: 'm1', url: 'https://cdn/x.jpg' },
+      { type: 'youtube', videoId: 'dQw4w9WgXcQ' },
+    ])
+  })
+  it('keeps an image item with empty url (just uploaded, url pending is still valid)', () => {
+    const out = validateContent('gallery', { items: [{ type: 'image', mediaId: '', url: '' }] })
+    expect(out.items).toEqual([{ type: 'image', mediaId: '', url: '' }])
+  })
+  it('keeps a youtube item with a partial id instead of dropping it', () => {
+    const out = validateContent('gallery', { items: [{ type: 'youtube', videoId: 'abc' }] })
+    expect(out.items).toEqual([{ type: 'youtube', videoId: 'abc' }])
+  })
+})

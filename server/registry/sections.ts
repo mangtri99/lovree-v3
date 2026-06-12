@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { galleryItem } from './field-types'
+import { galleryItems } from './field-types'
 
 export type FieldType = 'text' | 'longtext' | 'date' | 'url' | 'youtube' | 'image' | 'list'
 export interface FieldDescriptor {
@@ -50,7 +50,7 @@ const loveGiftSchema = z.object({
   note: z.string().default(''),
   banks: z.array(bankSchema).default([]),
 })
-const gallerySchema = z.object({ items: z.array(galleryItem).default([]) })
+const gallerySchema = z.object({ items: galleryItems })
 const closingSchema = z.object({ body: z.string().default('') })
 const socialLinkSchema = z.object({ label: z.string().default(''), url: safeUrl })
 const infoSchema = z.object({
