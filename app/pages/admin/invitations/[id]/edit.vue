@@ -17,6 +17,7 @@ if (!data.value) throw createError({ statusCode: 404, statusMessage: 'Tidak dite
 
 const editor = createEditorState((data.value as any).draftDocument ?? { sections: [] })
 const device = ref<'mobile' | 'desktop'>('mobile')
+const showCover = ref(false)
 const saveState = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
 const cssVars = ((data.value as any).cssVars ?? {}) as Record<string, string>
 
@@ -61,8 +62,9 @@ async function publish() {
           <div class="mb-2 flex gap-2">
             <UButton size="xs" :variant="device === 'mobile' ? 'solid' : 'outline'" label="Mobile" @click="device = 'mobile'" />
             <UButton size="xs" :variant="device === 'desktop' ? 'solid' : 'outline'" label="Desktop" @click="device = 'desktop'" />
+            <UButton size="xs" :variant="showCover ? 'solid' : 'outline'" :label="showCover ? 'Lihat Isi' : 'Lihat Cover'" @click="showCover = !showCover" />
           </div>
-          <EditorPreview :sections="editor.doc.sections" :css-vars="cssVars" :device="device" :show-cover="false" />
+          <EditorPreview :sections="editor.doc.sections" :css-vars="cssVars" :device="device" :show-cover="showCover" @open="showCover = false" />
         </div>
       </div>
     </template>
