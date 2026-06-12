@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid'
 import { useDb } from '../../../db'
 import { invitations, themes } from '../../../db/schema'
 import { slugify } from '../../../utils/slug'
+import { starterDocument } from '../../../registry/starter-sections'
 
 const body = z.object({
   title: z.string().min(1),
@@ -26,7 +27,7 @@ export default defineEventHandler(async (event) => {
   const slug = slugify(parsed.data.title, nanoid(6))
   const [inv] = await db.insert(invitations).values({
     ownerId, slug, type: parsed.data.type, themeId,
-    status: 'draft', draftDocument: { sections: [] },
+    status: 'draft', draftDocument: starterDocument(parsed.data.type),
   }).returning({ id: invitations.id, slug: invitations.slug })
   return inv
 })

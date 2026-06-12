@@ -14,6 +14,9 @@ function label(t: string) { return (sectionRegistry as any)[t]?.label ?? t }
 </script>
 <template>
   <div class="space-y-2">
+    <div v-if="!sections.length" class="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500">
+      Belum ada bagian. Mulai dengan menambahkan bagian di bawah — biasanya <strong>Hero</strong> (nama &amp; tanggal) dulu.
+    </div>
     <UCard v-for="(s, i) in sections" :key="s.id" :ui="{ body: 'p-0' }">
       <div class="flex items-center gap-2 p-2">
         <UButton variant="ghost" color="neutral" size="xs" :label="label(s.type)" @click="openId = openId === s.id ? null : s.id" />
