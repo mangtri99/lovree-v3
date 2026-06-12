@@ -30,7 +30,7 @@ async function onChange(e: Event) {
 <template>
   <div>
     <input type="file" :accept="accept" :disabled="busy" @change="onChange" />
-    <span v-if="busy" class="text-xs text-gray-500">Mengunggah…</span>
+    <span v-if="busy" class="text-xs text-muted">Mengunggah…</span>
     <span v-if="error" class="text-xs text-red-600">{{ error }}</span>
   </div>
 </template>

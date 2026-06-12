@@ -20,13 +20,13 @@ function setItemField(i: number, key: string, value: unknown) {
 </script>
 <template>
   <div class="text-sm">
-    <span v-if="label" class="mb-1 block text-gray-600">{{ label }}</span>
-    <div v-for="(item, i) in modelValue" :key="i" class="mb-3 rounded border p-3">
+    <span v-if="label" class="mb-1 block text-muted">{{ label }}</span>
+    <div v-for="(item, i) in modelValue" :key="i" class="mb-3 rounded border border-default p-3">
       <FieldEditor
         v-for="ed in itemEditors" :key="ed.key" :descriptor="ed"
         :model-value="item[ed.key]" @update:model-value="(v) => setItemField(i, ed.key, v)" />
       <button type="button" class="mt-2 text-xs text-red-600" @click="removeAt(i)">Hapus item</button>
     </div>
-    <button type="button" class="rounded border px-2 py-1 text-xs" @click="add">+ Tambah</button>
+    <button type="button" class="rounded border border-default px-2 py-1 text-xs text-default hover:bg-elevated" @click="add">+ Tambah</button>
   </div>
 </template>

@@ -9,7 +9,7 @@ function onUploaded(media: { id: string; url: string }) {
 </script>
 <template>
   <div class="text-sm">
-    <span v-if="label" class="mb-1 block text-gray-600">{{ label }}</span>
+    <span v-if="label" class="mb-1 block text-muted">{{ label }}</span>
     <img v-if="modelValue?.url" :src="modelValue.url" alt="" class="mb-2 h-20 w-20 rounded object-cover" />
     <MediaUploader kind="image" @uploaded="onUploaded" />
   </div>
