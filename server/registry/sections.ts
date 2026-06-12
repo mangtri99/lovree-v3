@@ -26,7 +26,7 @@ const personSchema = z.object({
   childOrder: z.string().default(''),
   address: z.string().default(''),
   instagram: z.string().default(''),
-  photoMediaId: z.string().uuid().nullable().default(null),
+  photo: z.object({ mediaId: z.string().default(''), url: z.string().default('') }).default({ mediaId: '', url: '' }),
 })
 const coupleSchema = z.object({
   people: z.array(personSchema).default([]),
@@ -93,7 +93,7 @@ export const sectionRegistry = {
           childOrder: { type: 'text' as const, label: 'Anak ke-' },
           address: { type: 'text' as const, label: 'Alamat' },
           instagram: { type: 'text' as const, label: 'Instagram' },
-          photoMediaId: { type: 'image' as const, label: 'Foto' },
+          photo: { type: 'image' as const, label: 'Foto' },
         },
       },
     },

@@ -56,3 +56,14 @@ describe('gallery resilient validation', () => {
     expect(out.items).toEqual([{ type: 'youtube', videoId: 'abc' }])
   })
 })
+
+describe('couple person photo', () => {
+  it('defaults photo to an empty object', () => {
+    const out = validateContent('couple', { people: [{ name: 'Willy' }] })
+    expect(out.people[0].photo).toEqual({ mediaId: '', url: '' })
+  })
+  it('preserves a set photo', () => {
+    const out = validateContent('couple', { people: [{ name: 'W', photo: { mediaId: 'm1', url: 'https://cdn/p.jpg' } }] })
+    expect(out.people[0].photo).toEqual({ mediaId: 'm1', url: 'https://cdn/p.jpg' })
+  })
+})
