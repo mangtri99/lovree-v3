@@ -20,6 +20,7 @@
     "@nuxt/image": "^2.0.0",
     "@nuxt/ui": "^4.8.2",
     "drizzle-orm": "^0.45.2",
+    "nanoid": "^5.1.11",
     "nuxt": "^4.4.8",
     "nuxt-auth-utils": "^0.5.29",
     "tailwindcss": "^4.3.0",
