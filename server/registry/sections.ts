@@ -5,6 +5,7 @@ export type FieldType = 'text' | 'longtext' | 'date' | 'url' | 'youtube' | 'imag
 export interface FieldDescriptor {
   type: FieldType
   label: string
+  defaultItem?: Record<string, unknown>
   itemFields?: Record<string, FieldDescriptor>
 }
 
@@ -153,6 +154,7 @@ export const sectionRegistry = {
       items: {
         type: 'list' as const,
         label: 'Galeri',
+        defaultItem: { type: 'image', mediaId: '', url: '' },
         itemFields: {
           type: { type: 'text' as const, label: 'Tipe (image/youtube)' },
           mediaId: { type: 'image' as const, label: 'Gambar' },

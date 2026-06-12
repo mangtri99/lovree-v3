@@ -3,14 +3,14 @@ import { computed } from 'vue'
 import FieldEditor from '../FieldEditor.vue'
 import type { FieldEditorDescriptor } from '../../../utils/field-editors'
 
-const props = defineProps<{ modelValue: any[]; label?: string; itemFields: Record<string, any> }>()
+const props = defineProps<{ modelValue: any[]; label?: string; itemFields: Record<string, any>; defaultItem?: Record<string, unknown> }>()
 const emit = defineEmits<{ 'update:modelValue': [any[]] }>()
 
 const itemEditors = computed<FieldEditorDescriptor[]>(() =>
   Object.entries(props.itemFields).map(([key, d]) => ({ key, ...(d as any) })))
 
 function update(items: any[]) { emit('update:modelValue', items) }
-function add() { update([...(props.modelValue ?? []), {}]) }
+function add() { update([...(props.modelValue ?? []), props.defaultItem ? { ...props.defaultItem } : {}]) }
 function removeAt(i: number) { const a = [...props.modelValue]; a.splice(i, 1); update(a) }
 function setItemField(i: number, key: string, value: unknown) {
   const a = props.modelValue.map((x) => ({ ...x }))

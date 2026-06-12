@@ -20,6 +20,6 @@ const control = computed(() => ({
 <template>
   <component
     :is="control" :label="descriptor.label" :model-value="modelValue"
-    v-bind="descriptor.type === 'list' ? { itemFields: descriptor.itemFields } : {}"
+    v-bind="descriptor.type === 'list' ? { itemFields: descriptor.itemFields, defaultItem: descriptor.defaultItem } : {}"
     @update:model-value="$emit('update:modelValue', $event)" />
 </template>
