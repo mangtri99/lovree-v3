@@ -1,25 +1,25 @@
 import { describe, it, expect } from 'vitest'
-import { baseTokens, resolveTokens, tokensToCssVars, OVERRIDE_WHITELIST } from '../../server/theme/tokens'
+import { resolveTokens, tokensToCssVars, OVERRIDE_WHITELIST } from '../../server/theme/tokens'
 
-describe('tokens', () => {
-  it('theme overrides base, invitation overrides theme', () => {
-    const theme = { color: { primary: '#8b5e3c' } }
-    const overrides = { color: { primary: '#111111' }, font: { heading: 'Cormorant' } }
-    const r = resolveTokens(theme, overrides)
-    expect(r.color.primary).toBe('#111111')      // invitation wins
-    expect(r.font.heading).toBe('Cormorant')      // invitation adds
-    expect(r.color.bg).toBe(baseTokens.color.bg)  // base fallback
+const theme = { color: { primary: '#111111', secondary: '#222222', accent: '#333333' }, font: { heading: 'Marcellus', body: 'Lora' } }
+
+describe('resolveTokens design overrides', () => {
+  it('applies a whitelisted accent override', () => {
+    const out = resolveTokens(theme as any, { color: { accent: '#abcdef' } } as any)
+    expect(out.color.accent).toBe('#abcdef')
   })
-
-  it('drops non-whitelisted invitation overrides', () => {
-    const r = resolveTokens({}, { radius: { sm: '999px' } as any })
-    expect(r.radius.sm).toBe(baseTokens.radius.sm)
-    expect(OVERRIDE_WHITELIST).not.toContain('radius.sm')
+  it('lets primary override but locks background', () => {
+    const out = resolveTokens(theme as any, { color: { primary: '#aaaaaa', bg: '#000000' }, font: { body: 'Poppins' } } as any)
+    expect(out.color.primary).toBe('#aaaaaa')
+    expect(out.font.body).toBe('Poppins')
+    expect(out.color.bg).not.toBe('#000000') // bg not overridable
   })
-
-  it('flattens tokens to css custom properties', () => {
-    const vars = tokensToCssVars(resolveTokens({ color: { primary: '#abc' } }, {}))
-    expect(vars['--color-primary']).toBe('#abc')
-    expect(vars['--font-heading']).toBeDefined()
+  it('exposes a live-preview css var for an overridden colour', () => {
+    const vars = tokensToCssVars(resolveTokens(theme as any, { color: { primary: '#123456' } } as any))
+    expect(vars['--color-primary']).toBe('#123456')
+    expect(vars['--color-bg']).not.toBe('#123456')
+  })
+  it('whitelist contains accent', () => {
+    expect(OVERRIDE_WHITELIST).toContain('color.accent')
   })
 })

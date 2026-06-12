@@ -13,7 +13,7 @@ export const baseTokens: Tokens = {
 }
 
 // Dotted paths a customer may override on top of a theme. Everything else locks to the theme.
-export const OVERRIDE_WHITELIST = ['color.primary', 'color.secondary', 'font.heading', 'font.body'] as const
+export const OVERRIDE_WHITELIST = ['color.primary', 'color.secondary', 'color.accent', 'font.heading', 'font.body'] as const
 
 type DeepPartial<T> = { [K in keyof T]?: Partial<T[K]> }
 
