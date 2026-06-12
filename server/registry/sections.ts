@@ -1,10 +1,11 @@
 import { z } from 'zod'
-import { galleryItem } from './field-types'
+import { galleryItems } from './field-types'
 
 export type FieldType = 'text' | 'longtext' | 'date' | 'url' | 'youtube' | 'image' | 'list'
 export interface FieldDescriptor {
   type: FieldType
   label: string
+  defaultItem?: Record<string, unknown>
   itemFields?: Record<string, FieldDescriptor>
 }
 
@@ -25,7 +26,7 @@ const personSchema = z.object({
   childOrder: z.string().default(''),
   address: z.string().default(''),
   instagram: z.string().default(''),
-  photoMediaId: z.string().uuid().nullable().default(null),
+  photo: z.object({ mediaId: z.string().default(''), url: z.string().default('') }).default({ mediaId: '', url: '' }),
 })
 const coupleSchema = z.object({
   people: z.array(personSchema).default([]),
@@ -50,7 +51,7 @@ const loveGiftSchema = z.object({
   note: z.string().default(''),
   banks: z.array(bankSchema).default([]),
 })
-const gallerySchema = z.object({ items: z.array(galleryItem).default([]) })
+const gallerySchema = z.object({ items: galleryItems })
 const closingSchema = z.object({ body: z.string().default('') })
 const socialLinkSchema = z.object({ label: z.string().default(''), url: safeUrl })
 const infoSchema = z.object({
@@ -92,7 +93,7 @@ export const sectionRegistry = {
           childOrder: { type: 'text' as const, label: 'Anak ke-' },
           address: { type: 'text' as const, label: 'Alamat' },
           instagram: { type: 'text' as const, label: 'Instagram' },
-          photoMediaId: { type: 'image' as const, label: 'Foto' },
+          photo: { type: 'image' as const, label: 'Foto' },
         },
       },
     },
@@ -153,9 +154,10 @@ export const sectionRegistry = {
       items: {
         type: 'list' as const,
         label: 'Galeri',
+        defaultItem: { type: 'image', image: { mediaId: '', url: '' } },
         itemFields: {
           type: { type: 'text' as const, label: 'Tipe (image/youtube)' },
-          mediaId: { type: 'image' as const, label: 'Gambar' },
+          image: { type: 'image' as const, label: 'Gambar' },
           videoId: { type: 'youtube' as const, label: 'YouTube ID' },
         },
       },

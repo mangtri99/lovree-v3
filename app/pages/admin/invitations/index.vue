@@ -49,7 +49,15 @@ async function create() {
           <div class="flex items-center gap-2">
             <span>{{ inv.slug }}</span>
             <UBadge :color="inv.status === 'published' ? 'success' : 'neutral'" variant="subtle" :label="inv.status" />
-            <UButton class="ml-auto" variant="link" :to="`/admin/invitations/${inv.id}/edit`" label="Edit" />
+            <UButton
+              v-if="inv.status === 'published'"
+              class="ml-auto"
+              variant="link"
+              icon="i-lucide-external-link"
+              :to="`/u/${inv.slug}`"
+              target="_blank"
+              label="View" />
+            <UButton :class="inv.status === 'published' ? '' : 'ml-auto'" variant="link" :to="`/admin/invitations/${inv.id}/edit`" label="Edit" />
           </div>
         </UCard>
       </div>

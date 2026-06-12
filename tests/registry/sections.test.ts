@@ -31,3 +31,44 @@ describe('section registry', () => {
     expect(out.events).toEqual([])
   })
 })
+
+describe('gallery resilient validation', () => {
+  it('drops malformed items but keeps the rest (section not reset)', () => {
+    const out = validateContent('gallery', {
+      items: [
+        { type: 'image', image: { mediaId: 'm1', url: 'https://cdn/x.jpg' } },
+        {},
+        { type: 'youtube', videoId: 'dQw4w9WgXcQ' },
+        { type: 'bogus' },
+      ],
+    })
+    expect(out.items).toEqual([
+      { type: 'image', image: { mediaId: 'm1', url: 'https://cdn/x.jpg' } },
+      { type: 'youtube', videoId: 'dQw4w9WgXcQ' },
+    ])
+  })
+  it('keeps an image item with empty image (just added, not yet uploaded)', () => {
+    const out = validateContent('gallery', { items: [{ type: 'image', image: { mediaId: '', url: '' } }] })
+    expect(out.items).toEqual([{ type: 'image', image: { mediaId: '', url: '' } }])
+  })
+  it('keeps a youtube item with a partial id instead of dropping it', () => {
+    const out = validateContent('gallery', { items: [{ type: 'youtube', videoId: 'abc' }] })
+    expect(out.items).toEqual([{ type: 'youtube', videoId: 'abc' }])
+  })
+  it('keeps the object the image control writes after an upload (regression: editor->schema roundtrip)', () => {
+    // ImageControl emits { mediaId, url }; ListControl stores it under the `image` field key.
+    const out = validateContent('gallery', { items: [{ type: 'image', image: { mediaId: 'abc', url: 'https://cdn/up.jpg' } }] })
+    expect(out.items).toEqual([{ type: 'image', image: { mediaId: 'abc', url: 'https://cdn/up.jpg' } }])
+  })
+})
+
+describe('couple person photo', () => {
+  it('defaults photo to an empty object', () => {
+    const out = validateContent('couple', { people: [{ name: 'Willy' }] })
+    expect(out.people[0].photo).toEqual({ mediaId: '', url: '' })
+  })
+  it('preserves a set photo', () => {
+    const out = validateContent('couple', { people: [{ name: 'W', photo: { mediaId: 'm1', url: 'https://cdn/p.jpg' } }] })
+    expect(out.people[0].photo).toEqual({ mediaId: 'm1', url: 'https://cdn/p.jpg' })
+  })
+})
