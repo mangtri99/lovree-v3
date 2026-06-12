@@ -6,7 +6,11 @@
 
 **Architecture:** Retire the normalized `sections` table; an invitation now holds two JSONB documents (`draft_document`, `published_document`) shaped `{ sections: [{ id, type, enabled, content }] }`. The editor mutates a reactive copy of the draft document and renders the production `<SectionRenderer>` live in a containment-scoped preview pane. Autosave PATCHes the full document (debounced, server-validated, owner-checked); Publish snapshots draft→published and bumps a cache version. Pure functions (`validateDraftDocument`, `assertOwner`, `draftToPublished`, `validateMediaUpload`, `deriveFieldEditors`, `autosaveDebounce`) carry the logic; UI is a thin shell.
 
-**Tech Stack:** Nuxt 4 (Nitro), Drizzle/Neon, nuxt-auth-utils, Zod, @aws-sdk/client-s3 (R2), Vitest + @vue/test-utils, nanoid.
+**Admin UI uses Nuxt UI v4** (open-source, includes the Dashboard components). The admin/editor pages are built with Nuxt UI components and a `UDashboard*` layout; the **public invitation renderer stays custom** (design tokens, bespoke styling) and does NOT use Nuxt UI. Adopting Nuxt UI v4 requires migrating the app from the Tailwind v3 module (`@nuxtjs/tailwindcss`) to **Tailwind v4** (bundled via `@nuxt/ui` + a `main.css`); this is done first (Task 0) and Phase 0+1 is re-verified green under v4.
+
+**Tech Stack:** Nuxt 4 (Nitro), Nuxt UI v4 + Tailwind v4 (admin), Drizzle/Neon, nuxt-auth-utils, Zod, @aws-sdk/client-s3 (R2), Vitest + @vue/test-utils, nanoid.
+
+**Testing note for Nuxt UI components:** unit tests that mount admin components built on Nuxt UI register lightweight **global stubs** for the `U*` components they use (e.g. `UInput`, `UTextarea`, `USelect`, `UButton`, `UFormField`) so tests stay fast and don't boot the full Nuxt UI runtime. Each stub renders a minimal native element that forwards `modelValue`/events, letting the behavior assertions (emit on input, dispatch by type) still hold. A shared `tests/helpers/nuxt-ui-stubs.ts` exports these stubs.
 
 Spec: `docs/superpowers/specs/2026-06-11-phase-2a-editor-design.md`. Builds on the Phase 0+1 codebase on branch `feat/foundation-renderer`.
 
@@ -15,6 +19,11 @@ Spec: `docs/superpowers/specs/2026-06-11-phase-2a-editor-design.md`. Builds on t
 ## File Structure
 
 ```
+nuxt.config.ts                               MODIFY: swap @nuxtjs/tailwindcss -> @nuxt/ui; add css main.css
+app/assets/css/main.css                      NEW: @import "tailwindcss"; @import "@nuxt/ui";
+app/app.vue                                   MODIFY: wrap <NuxtPage/> in <UApp>
+app/layouts/admin.vue                        NEW: UDashboard sidebar/panel shell for /admin/*
+tests/helpers/nuxt-ui-stubs.ts               NEW: shared global stubs for U* components in unit tests
 server/db/schema.ts                          MODIFY: drop sections table; add draft_document/published_document/published_at to invitations
 server/db/seed.ts                            MODIFY: write documents instead of section rows
 server/registry/sections.ts                  MODIFY: add `fields` descriptor per section; export FieldDescriptor types
@@ -50,6 +59,128 @@ app/components/editor/
 app/pages/admin/
   invitations/index.vue                      list + create
   invitations/[id]/edit.vue                  editor shell (panel + preview + publish)
+```
+
+---
+
+## Task 0: Migrate to Tailwind v4 + Nuxt UI v4 (prerequisite)
+
+**Files:**
+- Modify: `nuxt.config.ts`, `app/app.vue`, `package.json`
+- Create: `app/assets/css/main.css`
+- Remove: the `@nuxtjs/tailwindcss` dependency/module
+
+- [ ] **Step 1: Swap the Tailwind module for Nuxt UI**
+
+Run:
+```bash
+npm uninstall @nuxtjs/tailwindcss
+npm install @nuxt/ui tailwindcss
+```
+(`@nuxt/ui` v4 brings Tailwind v4; no separate Tailwind module.)
+
+- [ ] **Step 2: Update nuxt.config.ts**
+
+Set modules and css (keep `@nuxt/image` and `nuxt-auth-utils`; drop `@nuxtjs/tailwindcss`):
+```ts
+export default defineNuxtConfig({
+  modules: ['@nuxt/ui', '@nuxt/image', 'nuxt-auth-utils'],
+  css: ['~/assets/css/main.css'],
+  compatibilityDate: '2025-01-01',
+  nitro: { preset: 'vercel' },
+  runtimeConfig: { /* unchanged from Phase 0+1 */
+    databaseUrl: '',
+    r2: { accountId: '', accessKeyId: '', secretAccessKey: '', bucket: '', publicUrl: '' },
+    oauth: { google: { clientId: '', clientSecret: '' } },
+    session: { password: '' },
+    public: {},
+  },
+})
+```
+
+- [ ] **Step 3: Create the CSS entry + remove any v3 config**
+
+If a `tailwind.config.ts`/`tailwind.config.js` exists from the Phase 0+1 `@nuxtjs/tailwindcss` setup, delete it (Tailwind v4 configures via CSS `@theme`, not a JS config). We have no custom theme, so nothing needs porting.
+
+`app/assets/css/main.css`:
+```css
+@import "tailwindcss";
+@import "@nuxt/ui";
+```
+
+- [ ] **Step 4: Wrap the app in `<UApp>`**
+
+`app/app.vue`:
+```vue
+<template>
+  <UApp>
+    <NuxtRouteAnnouncer />
+    <NuxtPage />
+  </UApp>
+</template>
+```
+
+- [ ] **Step 5: Verify Phase 0+1 still works under Tailwind v4**
+
+Run: `npx nuxi prepare && npx nuxi typecheck` (exit 0) and `npx vitest run` (all existing tests green).
+Then manually confirm the public renderer styling is intact: the invitation components use only stable utilities (`grid`, `place-items-center`, `aspect-video`, `rounded-full`, `tracking-widest`, `whitespace-pre-line`, `bg-black/60`, `fixed inset-0`), all valid in Tailwind v4. If any utility breaks (e.g. a renamed class), fix the specific class and note it. Do NOT restyle the invitation; only repair breakage.
+
+- [ ] **Step 6: Commit**
+```bash
+git add -A
+git commit -m "build: migrate to Tailwind v4 + Nuxt UI v4"
+```
+
+---
+
+## Task 0b: Admin dashboard layout (Nuxt UI)
+
+**Files:**
+- Create: `app/layouts/admin.vue`
+
+- [ ] **Step 1: Implement the admin shell**
+
+A minimal dashboard layout using Nuxt UI's dashboard components (free in v4). Admin pages opt in via `definePageMeta({ layout: 'admin', middleware: 'admin' })`.
+
+`app/layouts/admin.vue`:
+```vue
+<script setup lang="ts">
+const { clear } = useUserSession()
+const links = [
+  { label: 'Undangan', icon: 'i-lucide-mail', to: '/admin/invitations' },
+]
+async function logout() {
+  await $fetch('/api/auth/logout', { method: 'POST' })
+  await clear()
+  await navigateTo('/login')
+}
+</script>
+
+<template>
+  <UDashboardGroup>
+    <UDashboardSidebar>
+      <template #header>
+        <span class="font-semibold">Lovree</span>
+      </template>
+      <UNavigationMenu orientation="vertical" :items="links" />
+      <template #footer>
+        <UButton color="neutral" variant="ghost" icon="i-lucide-log-out" label="Keluar" @click="logout" />
+      </template>
+    </UDashboardSidebar>
+    <slot />
+  </UDashboardGroup>
+</template>
+```
+(`UDashboardGroup`, `UDashboardSidebar`, `UNavigationMenu`, `UButton` are Nuxt UI v4 components, auto-imported. Icons use the Lucide collection bundled with Nuxt UI.)
+
+- [ ] **Step 2: Typecheck**
+
+Run: `npx nuxi typecheck` (exit 0).
+
+- [ ] **Step 3: Commit**
+```bash
+git add -A
+git commit -m "feat: add Nuxt UI admin dashboard layout"
 ```
 
 ---
@@ -1238,24 +1369,45 @@ git commit -m "feat: add autosave debouncer"
 - Create: `app/components/editor/controls/TextControl.vue`, `LongtextControl.vue`, `DateControl.vue`, `UrlControl.vue`, `YoutubeControl.vue`, `ImageControl.vue`, `ListControl.vue`, and `app/components/editor/FieldEditor.vue`
 - Test: `tests/components/field-editor.test.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [ ] **Step 1: Write the shared Nuxt UI stubs + the failing test**
+
+`tests/helpers/nuxt-ui-stubs.ts` (minimal native-element stubs that forward modelValue + events, so unit tests don't boot the full Nuxt UI runtime):
+```ts
+const vModelInput = (tag: string) => ({
+  props: ['modelValue', 'type', 'placeholder', 'disabled', 'accept'],
+  emits: ['update:modelValue'],
+  template: `<${tag} :value="modelValue" @input="$emit('update:modelValue', $event.target.value)" />`,
+})
+export const nuxtUiStubs = {
+  UInput: vModelInput('input'),
+  UTextarea: vModelInput('textarea'),
+  USelect: { props: ['modelValue', 'items'], emits: ['update:modelValue'], template: '<select @change="$emit(\'update:modelValue\', $event.target.value)"><slot/></select>' },
+  UButton: { props: ['label', 'disabled', 'icon', 'color', 'variant'], emits: ['click'], template: '<button :disabled="disabled" @click="$emit(\'click\', $event)"><slot>{{ label }}</slot></button>' },
+  UCheckbox: { props: ['modelValue'], emits: ['update:modelValue'], template: '<input type="checkbox" :checked="modelValue" @change="$emit(\'update:modelValue\', $event.target.checked)" />' },
+  UFormField: { props: ['label'], template: '<label><span>{{ label }}</span><slot/></label>' },
+  UCard: { template: '<div><slot/></div>' },
+}
+```
 
 `tests/components/field-editor.test.ts`:
 ```ts
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import FieldEditor from '../../app/components/editor/FieldEditor.vue'
+import { nuxtUiStubs } from '../helpers/nuxt-ui-stubs'
+
+const opts = { global: { stubs: nuxtUiStubs } }
 
 describe('FieldEditor', () => {
   it('renders a text input for type text and emits update', async () => {
-    const w = mount(FieldEditor, { props: { descriptor: { key: 'title', type: 'text', label: 'Judul' }, modelValue: 'A' } })
+    const w = mount(FieldEditor, { props: { descriptor: { key: 'title', type: 'text', label: 'Judul' }, modelValue: 'A' }, ...opts })
     const input = w.find('input')
     expect((input.element as HTMLInputElement).value).toBe('A')
     await input.setValue('B')
     expect(w.emitted('update:modelValue')![0]).toEqual(['B'])
   })
   it('renders a textarea for longtext', () => {
-    const w = mount(FieldEditor, { props: { descriptor: { key: 'body', type: 'longtext', label: 'Isi' }, modelValue: '' } })
+    const w = mount(FieldEditor, { props: { descriptor: { key: 'body', type: 'longtext', label: 'Isi' }, modelValue: '' }, ...opts })
     expect(w.find('textarea').exists()).toBe(true)
   })
 })
@@ -1268,45 +1420,44 @@ Expected: FAIL.
 
 - [ ] **Step 3: Implement the controls**
 
-Each control is a thin `v-model` wrapper. `TextControl.vue`:
+Each control is a thin `v-model` wrapper built on Nuxt UI's `UInput`/`UTextarea` inside a `UFormField` (label). The `U*` components are auto-imported in the app; in unit tests they're stubbed via `nuxtUiStubs`.
+
+`TextControl.vue`:
 ```vue
 <script setup lang="ts">
 defineProps<{ modelValue: string; label?: string }>()
 defineEmits<{ 'update:modelValue': [string] }>()
 </script>
 <template>
-  <label class="block text-sm">
-    <span v-if="label" class="mb-1 block text-gray-600">{{ label }}</span>
-    <input :value="modelValue" class="w-full rounded border p-2" @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)" />
-  </label>
+  <UFormField :label="label">
+    <UInput :model-value="modelValue" class="w-full" @update:model-value="$emit('update:modelValue', String($event))" />
+  </UFormField>
 </template>
 ```
 
-`LongtextControl.vue` (same but `<textarea>`):
+`LongtextControl.vue`:
 ```vue
 <script setup lang="ts">
 defineProps<{ modelValue: string; label?: string }>()
 defineEmits<{ 'update:modelValue': [string] }>()
 </script>
 <template>
-  <label class="block text-sm">
-    <span v-if="label" class="mb-1 block text-gray-600">{{ label }}</span>
-    <textarea :value="modelValue" rows="4" class="w-full rounded border p-2" @input="$emit('update:modelValue', ($event.target as HTMLTextAreaElement).value)" />
-  </label>
+  <UFormField :label="label">
+    <UTextarea :model-value="modelValue" :rows="4" class="w-full" @update:model-value="$emit('update:modelValue', String($event))" />
+  </UFormField>
 </template>
 ```
 
-`DateControl.vue` (input type date/datetime-local):
+`DateControl.vue` (a datetime-local input via UInput's `type`):
 ```vue
 <script setup lang="ts">
 defineProps<{ modelValue: string; label?: string }>()
 defineEmits<{ 'update:modelValue': [string] }>()
 </script>
 <template>
-  <label class="block text-sm">
-    <span v-if="label" class="mb-1 block text-gray-600">{{ label }}</span>
-    <input type="datetime-local" :value="modelValue" class="w-full rounded border p-2" @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)" />
-  </label>
+  <UFormField :label="label">
+    <UInput type="datetime-local" :model-value="modelValue" class="w-full" @update:model-value="$emit('update:modelValue', String($event))" />
+  </UFormField>
 </template>
 ```
 
@@ -1317,10 +1468,9 @@ defineProps<{ modelValue: string; label?: string }>()
 defineEmits<{ 'update:modelValue': [string] }>()
 </script>
 <template>
-  <label class="block text-sm">
-    <span v-if="label" class="mb-1 block text-gray-600">{{ label }}</span>
-    <input type="url" placeholder="https://" :value="modelValue" class="w-full rounded border p-2" @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)" />
-  </label>
+  <UFormField :label="label">
+    <UInput type="url" placeholder="https://" :model-value="modelValue" class="w-full" @update:model-value="$emit('update:modelValue', String($event))" />
+  </UFormField>
 </template>
 ```
 
@@ -1331,12 +1481,13 @@ defineProps<{ modelValue: string; label?: string }>()
 defineEmits<{ 'update:modelValue': [string] }>()
 </script>
 <template>
-  <label class="block text-sm">
-    <span v-if="label" class="mb-1 block text-gray-600">{{ label }}</span>
-    <input placeholder="YouTube video ID" :value="modelValue" class="w-full rounded border p-2" @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)" />
-  </label>
+  <UFormField :label="label">
+    <UInput placeholder="YouTube video ID" :model-value="modelValue" class="w-full" @update:model-value="$emit('update:modelValue', String($event))" />
+  </UFormField>
 </template>
 ```
+
+Note: the stub's `UInput` emits `update:modelValue` with the raw string from the native `<input>`; the real Nuxt UI `UInput` also emits `update:modelValue`. The `String($event)` guard keeps both paths typed as string.
 
 `ImageControl.vue` (stores a media id; opens MediaUploader — Task wires the uploader. For now it shows the current id and an upload slot):
 ```vue
@@ -1531,11 +1682,12 @@ git commit -m "feat: add media uploader component"
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SectionEditor from '../../app/components/editor/SectionEditor.vue'
+import { nuxtUiStubs } from '../helpers/nuxt-ui-stubs'
 
 describe('SectionEditor', () => {
   it('renders a field editor per registry field and emits content updates', async () => {
     const section = { id: 'a', type: 'hero', enabled: true, content: { title: 'X', coupleName: '', date: '' } }
-    const w = mount(SectionEditor, { props: { section } })
+    const w = mount(SectionEditor, { props: { section }, global: { stubs: nuxtUiStubs } })
     // hero has 3 fields -> at least 3 labelled controls
     expect(w.findAll('input').length).toBeGreaterThanOrEqual(3)
     const first = w.find('input')
@@ -1574,7 +1726,7 @@ const editors = computed(() => deriveFieldEditors(props.section.type as SectionT
 </template>
 ```
 
-`app/components/editor/SectionList.vue`:
+`app/components/editor/SectionList.vue` (Nuxt UI buttons/checkbox/card):
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
@@ -1592,26 +1744,27 @@ function label(t: string) { return (sectionRegistry as any)[t]?.label ?? t }
 </script>
 <template>
   <div class="space-y-2">
-    <div v-for="(s, i) in sections" :key="s.id" class="rounded border">
+    <UCard v-for="(s, i) in sections" :key="s.id" :ui="{ body: 'p-0' }">
       <div class="flex items-center gap-2 p-2">
-        <button type="button" class="text-xs" @click="openId = openId === s.id ? null : s.id">{{ label(s.type) }}</button>
-        <span class="ml-auto flex gap-1">
-          <button type="button" class="text-xs" :disabled="i === 0" @click="emit('move', { from: i, to: i - 1 })">↑</button>
-          <button type="button" class="text-xs" :disabled="i === sections.length - 1" @click="emit('move', { from: i, to: i + 1 })">↓</button>
-          <label class="text-xs"><input type="checkbox" :checked="s.enabled" @change="emit('toggle', s.id)" /> aktif</label>
-          <button type="button" class="text-xs text-red-600" @click="emit('remove', s.id)">hapus</button>
-        </span>
+        <UButton variant="ghost" color="neutral" size="xs" :label="label(s.type)" @click="openId = openId === s.id ? null : s.id" />
+        <div class="ml-auto flex items-center gap-1">
+          <UButton variant="ghost" size="xs" icon="i-lucide-arrow-up" :disabled="i === 0" @click="emit('move', { from: i, to: i - 1 })" />
+          <UButton variant="ghost" size="xs" icon="i-lucide-arrow-down" :disabled="i === sections.length - 1" @click="emit('move', { from: i, to: i + 1 })" />
+          <UCheckbox :model-value="s.enabled" label="aktif" @update:model-value="emit('toggle', s.id)" />
+          <UButton variant="ghost" color="error" size="xs" icon="i-lucide-trash-2" @click="emit('remove', s.id)" />
+        </div>
       </div>
       <div v-if="openId === s.id" class="border-t p-3">
         <SectionEditor :section="s" @set-field="(p) => emit('set-field', p)" />
       </div>
-    </div>
+    </UCard>
     <div class="flex flex-wrap gap-1 pt-2">
-      <button v-for="t in types" :key="t" type="button" class="rounded border px-2 py-1 text-xs" @click="emit('add', t as SectionType)">+ {{ label(t) }}</button>
+      <UButton v-for="t in types" :key="t" variant="soft" size="xs" :label="`+ ${label(t)}`" @click="emit('add', t as SectionType)" />
     </div>
   </div>
 </template>
 ```
+(SectionList is not unit-tested directly; SectionEditor's test covers field rendering. At runtime the `U*` components are auto-imported.)
 
 - [ ] **Step 4: Run test to verify it passes**
 
@@ -1760,7 +1913,7 @@ import SectionList from '~/components/editor/SectionList.vue'
 import EditorPreview from '~/components/editor/EditorPreview.vue'
 import SaveStatus from '~/components/editor/SaveStatus.vue'
 
-definePageMeta({ middleware: 'admin' })
+definePageMeta({ layout: 'admin', middleware: 'admin' })
 
 const route = useRoute()
 const id = route.params.id as string
@@ -1795,29 +1948,34 @@ async function publish() {
 </script>
 
 <template>
-  <div class="grid grid-cols-1 gap-4 p-4 md:grid-cols-2">
-    <div class="space-y-3">
-      <div class="flex items-center gap-2">
-        <h1 class="text-lg font-semibold">Editor</h1>
-        <SaveStatus :state="saveState" class="ml-2" />
-        <button class="ml-auto rounded bg-black px-3 py-1 text-sm text-white" :disabled="publishing" @click="publish">Publish</button>
+  <UDashboardPanel id="editor">
+    <template #header>
+      <UDashboardNavbar title="Editor">
+        <template #right>
+          <SaveStatus :state="saveState" />
+          <UButton label="Publish" :loading="publishing" @click="publish" />
+        </template>
+      </UDashboardNavbar>
+    </template>
+    <template #body>
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <SectionList
+          :sections="editor.doc.sections"
+          @add="editor.addSection"
+          @remove="editor.remove"
+          @toggle="editor.toggle"
+          @move="(p) => editor.move(p.from, p.to)"
+          @set-field="(p) => editor.setField(p.id, p.key, p.value)" />
+        <div>
+          <div class="mb-2 flex gap-2">
+            <UButton size="xs" :variant="device === 'mobile' ? 'solid' : 'outline'" label="Mobile" @click="device = 'mobile'" />
+            <UButton size="xs" :variant="device === 'desktop' ? 'solid' : 'outline'" label="Desktop" @click="device = 'desktop'" />
+          </div>
+          <EditorPreview :sections="editor.doc.sections" :css-vars="cssVars" :device="device" :show-cover="false" />
+        </div>
       </div>
-      <SectionList
-        :sections="editor.doc.sections"
-        @add="editor.addSection"
-        @remove="editor.remove"
-        @toggle="editor.toggle"
-        @move="(p) => editor.move(p.from, p.to)"
-        @set-field="(p) => editor.setField(p.id, p.key, p.value)" />
-    </div>
-    <div>
-      <div class="mb-2 flex gap-2">
-        <button class="rounded border px-2 py-1 text-xs" :class="{ 'bg-gray-200': device === 'mobile' }" @click="device = 'mobile'">Mobile</button>
-        <button class="rounded border px-2 py-1 text-xs" :class="{ 'bg-gray-200': device === 'desktop' }" @click="device = 'desktop'">Desktop</button>
-      </div>
-      <EditorPreview :sections="editor.doc.sections" :css-vars="cssVars" :device="device" :show-cover="false" />
-    </div>
-  </div>
+    </template>
+  </UDashboardPanel>
 </template>
 ```
 
@@ -1840,15 +1998,22 @@ git commit -m "feat: wire editor page (panel + preview + autosave + publish)"
 
 - [ ] **Step 1: Implement**
 
-`app/pages/admin/invitations/index.vue`:
+`app/pages/admin/invitations/index.vue` (admin layout + Nuxt UI):
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-definePageMeta({ middleware: 'admin' })
+definePageMeta({ layout: 'admin', middleware: 'admin' })
 
-const { data: list, refresh } = await useFetch('/api/admin/invitations')
+const { data: list } = await useFetch('/api/admin/invitations')
 const title = ref('')
 const type = ref<'wedding' | 'metatah' | 'wedding_metatah' | 'baby_3mo' | 'birthday'>('wedding')
+const typeItems = [
+  { label: 'Pernikahan', value: 'wedding' },
+  { label: 'Pernikahan + Metatah', value: 'wedding_metatah' },
+  { label: 'Metatah', value: 'metatah' },
+  { label: '3 Bulanan', value: 'baby_3mo' },
+  { label: 'Ulang Tahun', value: 'birthday' },
+]
 const creating = ref(false)
 const error = ref('')
 
@@ -1863,28 +2028,35 @@ async function create() {
 </script>
 
 <template>
-  <div class="mx-auto max-w-2xl p-6">
-    <h1 class="mb-4 text-xl font-semibold">Undangan Saya</h1>
-    <form class="mb-6 flex gap-2" @submit.prevent="create">
-      <input v-model="title" placeholder="Judul undangan" class="flex-1 rounded border p-2" required />
-      <select v-model="type" class="rounded border p-2">
-        <option value="wedding">Pernikahan</option>
-        <option value="wedding_metatah">Pernikahan + Metatah</option>
-        <option value="metatah">Metatah</option>
-        <option value="baby_3mo">3 Bulanan</option>
-        <option value="birthday">Ulang Tahun</option>
-      </select>
-      <button type="submit" :disabled="creating" class="rounded bg-black px-3 text-white">Buat</button>
-    </form>
-    <p v-if="error" class="mb-3 text-sm text-red-600">{{ error }}</p>
-    <ul class="space-y-2">
-      <li v-for="inv in (list as any[])" :key="inv.id" class="flex items-center gap-2 rounded border p-3">
-        <span>{{ inv.slug }}</span>
-        <span class="text-xs text-gray-500">{{ inv.status }}</span>
-        <NuxtLink :to="`/admin/invitations/${inv.id}/edit`" class="ml-auto text-sm text-blue-600">Edit</NuxtLink>
-      </li>
-    </ul>
-  </div>
+  <UDashboardPanel id="invitations">
+    <template #header>
+      <UDashboardNavbar title="Undangan Saya" />
+    </template>
+    <template #body>
+      <UCard class="mb-6">
+        <form class="flex flex-wrap items-end gap-2" @submit.prevent="create">
+          <UFormField label="Judul" class="flex-1">
+            <UInput v-model="title" placeholder="Judul undangan" required class="w-full" />
+          </UFormField>
+          <UFormField label="Tipe">
+            <USelect v-model="type" :items="typeItems" />
+          </UFormField>
+          <UButton type="submit" label="Buat" :loading="creating" />
+        </form>
+        <p v-if="error" class="mt-2 text-sm text-error">{{ error }}</p>
+      </UCard>
+
+      <div class="space-y-2">
+        <UCard v-for="inv in (list as any[])" :key="inv.id">
+          <div class="flex items-center gap-2">
+            <span>{{ inv.slug }}</span>
+            <UBadge :color="inv.status === 'published' ? 'success' : 'neutral'" variant="subtle" :label="inv.status" />
+            <UButton class="ml-auto" variant="link" :to="`/admin/invitations/${inv.id}/edit`" label="Edit" />
+          </div>
+        </UCard>
+      </div>
+    </template>
+  </UDashboardPanel>
 </template>
 ```
 
