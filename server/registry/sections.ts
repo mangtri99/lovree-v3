@@ -61,6 +61,14 @@ const infoSchema = z.object({
 const rsvpSchema = z.object({ title: z.string().default('Konfirmasi Kehadiran & Doa') })
 const guestbookSchema = z.object({ title: z.string().default('Ucapan & Doa') })
 const footerSchema = z.object({ text: z.string().default('') })
+const customItemSchema = z.object({
+  label: z.string().default(''),
+  value: z.string().default(''),
+})
+const customSchema = z.object({
+  title: z.string().default(''),
+  items: z.array(customItemSchema).default([]),
+})
 
 export const sectionRegistry = {
   hero: {
@@ -197,6 +205,22 @@ export const sectionRegistry = {
     label: 'Daftar Tamu',
     fields: {
       title: { type: 'text' as const, label: 'Judul' },
+    },
+  },
+  custom: {
+    schema: customSchema,
+    label: 'Informasi Tambahan',
+    fields: {
+      title: { type: 'text' as const, label: 'Judul' },
+      items: {
+        type: 'list' as const,
+        label: 'Baris',
+        defaultItem: { label: '', value: '' },
+        itemFields: {
+          label: { type: 'text' as const, label: 'Label' },
+          value: { type: 'longtext' as const, label: 'Isi' },
+        },
+      },
     },
   },
   footer: {
