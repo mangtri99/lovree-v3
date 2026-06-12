@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, inject } from 'vue'
 const props = defineProps<{ kind: 'image' | 'audio' }>()
-const emit = defineEmits<{ uploaded: [string] }>()
+const emit = defineEmits<{ uploaded: [{ id: string; url: string }] }>()
 const busy = ref(false)
 const error = ref('')
 const invitationId = inject<string>('invitationId', '')
@@ -19,7 +19,7 @@ async function onChange(e: Event) {
     form.append('kind', props.kind)
     form.append('file', file)
     const res = await $fetch<{ id: string; url: string }>('/api/admin/media', { method: 'POST', body: form })
-    emit('uploaded', res.id)
+    emit('uploaded', { id: res.id, url: res.url })
   } catch (e: any) {
     error.value = e?.data?.message ?? 'Upload gagal'
   } finally {
