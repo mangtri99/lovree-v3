@@ -2,6 +2,18 @@
 
 Tracked items surfaced during Phase 0+1 implementation and final review. None block Phase 0+1; each is intentionally deferred because it depends on Phase 2 work (the editor / upload pipeline) or is a non-blocking enhancement.
 
+---
+
+## Phase 2a follow-ups (deferred to Phase 2b)
+
+Surfaced in the Phase 2a (editor) final review. Two Important fixes (publish/autosave race, pre-buffer upload size cap) and the cover-in-preview criterion were fixed in Phase 2a; these two remain:
+
+### A. Wire uploaded audio to `invitation.musicMediaId`
+The media endpoint and `MediaUploader` already support `kind: 'audio'` (upload → R2 → `media` row), but no editor control sets `invitation.musicMediaId`, so an uploaded track is never used as the invitation's music. Spec §10 criterion #3 ("audio … usable in the editor") is therefore only partially met. **Fix (2b):** add a music control in the editor (upload audio → `PATCH /api/admin/invitations/:id/music` setting `musicMediaId`), and resolve `musicMediaId → url` in the editor GET so the preview's `MusicPlayer` can play it (this also lets the cover-in-preview play music, currently cover-only).
+
+### B. Edge/CDN cache purge on publish
+Publish versions the public response `ETag` by `published_at`, which makes browsers revalidate — but the public route also sends `s-maxage=300, stale-while-revalidate=600`. A shared CDN (e.g. Vercel Edge) keyed only on the URL can still serve a stale entry for up to ~5–15 min after a publish, so "immediately reflects" (criterion #6) holds for browser conditional-GET but not necessarily for a cold edge cache. **Fix (2b), deployment-dependent:** use the platform's cache-tag/`purge` API on publish, or lower `s-maxage`, or drop edge caching and rely on the fast SSR loader. Decide alongside the Vercel deployment config.
+
 ## Blocking for real (non-demo) invitations — do early in Phase 2
 
 ### 1. Image `mediaId` → URL resolution

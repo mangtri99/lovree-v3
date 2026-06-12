@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, boolean, integer, jsonb, timestamp, unique, index } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, jsonb, timestamp, unique } from 'drizzle-orm/pg-core'
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -26,19 +26,12 @@ export const invitations = pgTable('invitations', {
   tokenOverrides: jsonb('token_overrides').notNull().default({}),
   status: text('status').notNull().default('draft'),
   musicMediaId: uuid('music_media_id'),
+  draftDocument: jsonb('draft_document').notNull().default({ sections: [] }),
+  publishedDocument: jsonb('published_document'),
+  publishedAt: timestamp('published_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 })
-
-export const sections = pgTable('sections', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  invitationId: uuid('invitation_id').notNull().references(() => invitations.id),
-  type: text('type').notNull(),
-  position: integer('position').notNull(),
-  enabled: boolean('enabled').notNull().default(true),
-  content: jsonb('content').notNull().default({}),
-  fieldOverrides: jsonb('field_overrides').notNull().default({}),
-}, (t) => ({ byInvitationPos: index('sections_invitation_position_idx').on(t.invitationId, t.position) }))
 
 export const guests = pgTable('guests', {
   id: uuid('id').primaryKey().defaultRandom(),

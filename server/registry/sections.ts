@@ -1,6 +1,13 @@
 import { z } from 'zod'
 import { galleryItem } from './field-types'
 
+export type FieldType = 'text' | 'longtext' | 'date' | 'url' | 'youtube' | 'image' | 'list'
+export interface FieldDescriptor {
+  type: FieldType
+  label: string
+  itemFields?: Record<string, FieldDescriptor>
+}
+
 const safeUrl = z.string().refine((v) => v === '' || /^https?:\/\//i.test(v), 'must be an http(s) URL').default('')
 
 const heroSchema = z.object({
@@ -55,19 +62,148 @@ const guestbookSchema = z.object({ title: z.string().default('Ucapan & Doa') })
 const footerSchema = z.object({ text: z.string().default('') })
 
 export const sectionRegistry = {
-  hero: { schema: heroSchema, label: 'Hero' },
-  opening: { schema: openingSchema, label: 'Salam Pembuka' },
-  couple: { schema: coupleSchema, label: 'Pasangan' },
-  event: { schema: eventSchema, label: 'Detail Acara' },
-  countdown: { schema: countdownSchema, label: 'Countdown' },
-  quote: { schema: quoteSchema, label: 'Quote' },
-  love_gift: { schema: loveGiftSchema, label: 'Love Gift' },
-  gallery: { schema: gallerySchema, label: 'Galeri' },
-  closing: { schema: closingSchema, label: 'Salam Penutup' },
-  info: { schema: infoSchema, label: 'Info Lebih Lanjut' },
-  rsvp: { schema: rsvpSchema, label: 'Form Ucapan & Doa' },
-  guestbook: { schema: guestbookSchema, label: 'Daftar Tamu' },
-  footer: { schema: footerSchema, label: 'Footer' },
+  hero: {
+    schema: heroSchema,
+    label: 'Hero',
+    fields: {
+      title: { type: 'text' as const, label: 'Judul' },
+      coupleName: { type: 'text' as const, label: 'Nama Pasangan' },
+      date: { type: 'date' as const, label: 'Tanggal' },
+    },
+  },
+  opening: {
+    schema: openingSchema,
+    label: 'Salam Pembuka',
+    fields: {
+      greeting: { type: 'text' as const, label: 'Salam' },
+      body: { type: 'longtext' as const, label: 'Isi' },
+    },
+  },
+  couple: {
+    schema: coupleSchema,
+    label: 'Pasangan',
+    fields: {
+      people: {
+        type: 'list' as const,
+        label: 'Pasangan',
+        itemFields: {
+          name: { type: 'text' as const, label: 'Nama' },
+          parents: { type: 'longtext' as const, label: 'Orang Tua' },
+          childOrder: { type: 'text' as const, label: 'Anak ke-' },
+          address: { type: 'text' as const, label: 'Alamat' },
+          instagram: { type: 'text' as const, label: 'Instagram' },
+          photoMediaId: { type: 'image' as const, label: 'Foto' },
+        },
+      },
+    },
+  },
+  event: {
+    schema: eventSchema,
+    label: 'Detail Acara',
+    fields: {
+      events: {
+        type: 'list' as const,
+        label: 'Acara',
+        itemFields: {
+          name: { type: 'text' as const, label: 'Nama Acara' },
+          date: { type: 'date' as const, label: 'Tanggal' },
+          timeStart: { type: 'text' as const, label: 'Mulai' },
+          timeEnd: { type: 'text' as const, label: 'Selesai' },
+          venue: { type: 'text' as const, label: 'Tempat' },
+          mapsUrl: { type: 'url' as const, label: 'Google Maps' },
+        },
+      },
+    },
+  },
+  countdown: {
+    schema: countdownSchema,
+    label: 'Countdown',
+    fields: {
+      targetDate: { type: 'date' as const, label: 'Tanggal Tujuan' },
+    },
+  },
+  quote: {
+    schema: quoteSchema,
+    label: 'Quote',
+    fields: {
+      text: { type: 'longtext' as const, label: 'Kutipan' },
+      source: { type: 'text' as const, label: 'Sumber' },
+    },
+  },
+  love_gift: {
+    schema: loveGiftSchema,
+    label: 'Love Gift',
+    fields: {
+      note: { type: 'longtext' as const, label: 'Catatan' },
+      banks: {
+        type: 'list' as const,
+        label: 'Rekening',
+        itemFields: {
+          bank: { type: 'text' as const, label: 'Bank' },
+          number: { type: 'text' as const, label: 'No. Rekening' },
+          holder: { type: 'text' as const, label: 'Atas Nama' },
+        },
+      },
+    },
+  },
+  gallery: {
+    schema: gallerySchema,
+    label: 'Galeri',
+    fields: {
+      items: {
+        type: 'list' as const,
+        label: 'Galeri',
+        itemFields: {
+          type: { type: 'text' as const, label: 'Tipe (image/youtube)' },
+          mediaId: { type: 'image' as const, label: 'Gambar' },
+          videoId: { type: 'youtube' as const, label: 'YouTube ID' },
+        },
+      },
+    },
+  },
+  closing: {
+    schema: closingSchema,
+    label: 'Salam Penutup',
+    fields: {
+      body: { type: 'longtext' as const, label: 'Isi' },
+    },
+  },
+  info: {
+    schema: infoSchema,
+    label: 'Info Lebih Lanjut',
+    fields: {
+      phone: { type: 'text' as const, label: 'No. Telepon' },
+      socials: {
+        type: 'list' as const,
+        label: 'Sosial Media',
+        itemFields: {
+          label: { type: 'text' as const, label: 'Label' },
+          url: { type: 'url' as const, label: 'URL' },
+        },
+      },
+    },
+  },
+  rsvp: {
+    schema: rsvpSchema,
+    label: 'Form Ucapan & Doa',
+    fields: {
+      title: { type: 'text' as const, label: 'Judul' },
+    },
+  },
+  guestbook: {
+    schema: guestbookSchema,
+    label: 'Daftar Tamu',
+    fields: {
+      title: { type: 'text' as const, label: 'Judul' },
+    },
+  },
+  footer: {
+    schema: footerSchema,
+    label: 'Footer',
+    fields: {
+      text: { type: 'text' as const, label: 'Teks Footer' },
+    },
+  },
 } as const
 
 export type SectionType = keyof typeof sectionRegistry
