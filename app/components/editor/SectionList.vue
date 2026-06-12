@@ -17,20 +17,34 @@ function label(t: string) { return (sectionRegistry as any)[t]?.label ?? t }
     <div v-if="!sections.length" class="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500">
       Belum ada bagian. Mulai dengan menambahkan bagian di bawah — biasanya <strong>Hero</strong> (nama &amp; tanggal) dulu.
     </div>
-    <UCard v-for="(s, i) in sections" :key="s.id" :ui="{ body: 'p-0' }">
-      <div class="flex items-center gap-2 p-2">
-        <UButton variant="ghost" color="neutral" size="xs" :label="label(s.type)" @click="openId = openId === s.id ? null : s.id" />
-        <div class="ml-auto flex items-center gap-1">
+    <div
+      v-for="(s, i) in sections" :key="s.id"
+      class="overflow-hidden rounded-lg border bg-white transition-colors"
+      :class="openId === s.id ? 'border-primary-300' : 'border-gray-200'">
+      <div class="flex items-center gap-1 p-2" :class="openId === s.id ? 'bg-gray-50' : ''">
+        <button
+          type="button"
+          class="flex flex-1 items-center gap-2 rounded px-1 py-1 text-left hover:bg-gray-100"
+          :aria-expanded="openId === s.id"
+          @click="openId = openId === s.id ? null : s.id">
+          <UIcon
+            name="i-lucide-chevron-right"
+            class="size-4 shrink-0 text-gray-400 transition-transform duration-200"
+            :class="openId === s.id ? 'rotate-90' : ''" />
+          <span class="text-sm font-medium" :class="s.enabled ? 'text-gray-800' : 'text-gray-400 line-through'">{{ label(s.type) }}</span>
+          <span v-if="!s.enabled" class="text-xs text-gray-400">(nonaktif)</span>
+        </button>
+        <div class="flex items-center gap-1">
           <UButton variant="ghost" size="xs" icon="i-lucide-arrow-up" :disabled="i === 0" @click="emit('move', { from: i, to: i - 1 })" />
           <UButton variant="ghost" size="xs" icon="i-lucide-arrow-down" :disabled="i === sections.length - 1" @click="emit('move', { from: i, to: i + 1 })" />
           <UCheckbox :model-value="s.enabled" label="aktif" @update:model-value="emit('toggle', s.id)" />
           <UButton variant="ghost" color="error" size="xs" icon="i-lucide-trash-2" @click="emit('remove', s.id)" />
         </div>
       </div>
-      <div v-if="openId === s.id" class="border-t p-3">
+      <div v-if="openId === s.id" class="border-t border-gray-200 p-3">
         <SectionEditor :section="s" @set-field="(p) => emit('set-field', p)" />
       </div>
-    </UCard>
+    </div>
     <div class="flex flex-wrap gap-1 pt-2">
       <UButton v-for="t in types" :key="t" variant="soft" size="xs" :label="`+ ${label(t)}`" @click="emit('add', t as SectionType)" />
     </div>
