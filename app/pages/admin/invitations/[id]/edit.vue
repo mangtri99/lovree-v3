@@ -33,7 +33,7 @@ watch(() => editor.doc, () => { saveState.value = 'saving'; debouncer.schedule()
 const publishing = ref(false)
 async function publish() {
   publishing.value = true
-  try { debouncer.flush(); await $fetch(`/api/admin/invitations/${id}/publish`, { method: 'POST' }) }
+  try { await debouncer.flush(); await $fetch(`/api/admin/invitations/${id}/publish`, { method: 'POST' }) }
   finally { publishing.value = false }
 }
 </script>
