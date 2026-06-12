@@ -23,7 +23,7 @@ const visible = computed(() => props.sections.filter((s) => s.enabled))
 const hero = computed(() => props.sections.find((s) => s.type === 'hero')?.content ?? { title: '', coupleName: '' })
 </script>
 <template>
-  <div class="invitation" :style="rootStyle">
+  <div class="invitation h-full overflow-hidden" :style="rootStyle">
     <div data-preview-frame class="mx-auto h-full border bg-white" :style="frameStyle">
       <CoverModal v-if="showCover" :title="hero.title" :couple-name="hero.coupleName" guest-name="Tamu Undangan" @open="emit('open')" />
       <SectionRenderer v-for="s in visible" :key="s.id" :section="s" />

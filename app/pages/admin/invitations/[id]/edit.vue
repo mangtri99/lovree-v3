@@ -70,13 +70,13 @@ async function publish() {
             @move="(p) => editor.move(p.from, p.to)"
             @set-field="(p) => editor.setField(p.id, p.key, p.value)" />
         </div>
-        <div>
-          <div class="mb-2 flex gap-2">
+        <div class="flex flex-col md:sticky md:top-4 md:max-h-[calc(100vh-7rem)]">
+          <div class="mb-2 flex shrink-0 gap-2">
             <UButton size="xs" :variant="device === 'mobile' ? 'solid' : 'outline'" label="Mobile" @click="device = 'mobile'" />
             <UButton size="xs" :variant="device === 'desktop' ? 'solid' : 'outline'" label="Desktop" @click="device = 'desktop'" />
             <UButton size="xs" :variant="showCover ? 'solid' : 'outline'" :label="showCover ? 'Lihat Isi' : 'Lihat Cover'" @click="showCover = !showCover" />
           </div>
-          <EditorPreview :sections="editor.doc.sections" :css-vars="cssVars" :device="device" :show-cover="showCover" :music-url="musicUrl" @open="showCover = false" />
+          <EditorPreview class="min-h-0 flex-1" :sections="editor.doc.sections" :css-vars="cssVars" :device="device" :show-cover="showCover" :music-url="musicUrl" @open="showCover = false" />
         </div>
       </div>
     </template>
