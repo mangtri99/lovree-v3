@@ -6,6 +6,7 @@ import { reconcileSections } from '~/composables/useReconcile'
 import SectionList from '~/components/editor/SectionList.vue'
 import EditorPreview from '~/components/editor/EditorPreview.vue'
 import SaveStatus from '~/components/editor/SaveStatus.vue'
+import InvitationSettings from '~/components/editor/InvitationSettings.vue'
 
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 
@@ -21,6 +22,10 @@ const device = ref<'mobile' | 'desktop'>('mobile')
 const showCover = ref(false)
 const saveState = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
 const cssVars = ((data.value as any).cssVars ?? {}) as Record<string, string>
+const musicUrl = ref<string | null>((data.value as any).musicUrl ?? null)
+async function setMusic(mediaId: string | null) {
+  await $fetch(`/api/admin/invitations/${id}/music`, { method: 'PATCH', body: { musicMediaId: mediaId } })
+}
 
 async function save() {
   saveState.value = 'saving'
@@ -55,13 +60,16 @@ async function publish() {
     </template>
     <template #body>
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <SectionList
-          :sections="editor.doc.sections"
-          @add="editor.addSection"
-          @remove="editor.remove"
-          @toggle="editor.toggle"
-          @move="(p) => editor.move(p.from, p.to)"
-          @set-field="(p) => editor.setField(p.id, p.key, p.value)" />
+        <div class="space-y-4">
+          <InvitationSettings v-model:music-url="musicUrl" :on-set-music="setMusic" />
+          <SectionList
+            :sections="editor.doc.sections"
+            @add="editor.addSection"
+            @remove="editor.remove"
+            @toggle="editor.toggle"
+            @move="(p) => editor.move(p.from, p.to)"
+            @set-field="(p) => editor.setField(p.id, p.key, p.value)" />
+        </div>
         <div>
           <div class="mb-2 flex gap-2">
             <UButton size="xs" :variant="device === 'mobile' ? 'solid' : 'outline'" label="Mobile" @click="device = 'mobile'" />
