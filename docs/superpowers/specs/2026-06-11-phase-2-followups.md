@@ -51,3 +51,20 @@ The demo seed populates real content only for `hero`, `countdown`, and `quote`; 
 ### 7. Minor
 - `nuxt.config.ts` declares `runtimeConfig.databaseUrl`, but `server/db/index.ts` reads `process.env.DATABASE_URL` directly — the runtime-config key is unused; wire it or drop it.
 - Music media fetch in the loader is sequential after the slug lookup; it could join the `Promise.all` once `musicMediaId` is known.
+
+## Theme system gaps (Phase 4 — "additional themes")
+
+Surfaced 2026-06-13 while scoping Phase 2b-customization. A "theme" today is **only a token palette** (`themes.tokens` = colors + fonts). Adding a palette-only theme is trivial (insert a `themes` row, no code — the `resolveTokens` cascade and 2b-customization font-loading handle it). But making themes genuinely **look** different is not covered yet. Concrete gaps:
+
+### A. No admin UI for themes
+Themes are created only via the seed / manual SQL. New invitations auto-pick the first theme (`index.post.ts`). Need at minimum a theme list + a picker at invitation-create time, ideally CRUD. **Blocks** offering customers a real theme choice.
+
+### B. Sections render identically regardless of theme
+Every invitation renders the same section components; the theme only swaps CSS-var colors/fonts. There is no per-theme layout, ornament, or section-style variation — so two themes can only differ by palette. Genuinely distinct themes need either richer style tokens consumed by the section components, or per-theme component/layout variants (the larger option).
+
+### C. Defined-but-unused tokens (dead data)
+The `Tokens` shape defines more than the renderer consumes:
+- `--color-secondary` and `--font-body` are barely/never used by the section components (grep of `app/components/invitation/` shows only `--color-primary/bg/text/accent` + `--font-heading`).
+- `ornament.motif` and `ornament.divider` are **never** referenced in any render path — pure dead tokens.
+
+Wiring these into the section components (e.g. body font on paragraphs, secondary as a section accent, dividers between sections) is the cheapest way to make themes feel distinct, and should precede any per-theme-layout work. Note: Phase 2b-customization exposes `font.body` as an editable knob — until the renderer actually uses `--font-body`, that knob has no visible effect on most text. Track wiring `--font-body`/`--color-secondary` into the renderer as a fast-follow to 2b-customization.
