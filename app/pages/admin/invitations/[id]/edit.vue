@@ -76,7 +76,7 @@ async function publish() {
             <UButton size="xs" :variant="device === 'desktop' ? 'solid' : 'outline'" label="Desktop" @click="device = 'desktop'" />
             <UButton size="xs" :variant="showCover ? 'solid' : 'outline'" :label="showCover ? 'Lihat Isi' : 'Lihat Cover'" @click="showCover = !showCover" />
           </div>
-          <EditorPreview :sections="editor.doc.sections" :css-vars="cssVars" :device="device" :show-cover="showCover" @open="showCover = false" />
+          <EditorPreview :sections="editor.doc.sections" :css-vars="cssVars" :device="device" :show-cover="showCover" :music-url="musicUrl" @open="showCover = false" />
         </div>
       </div>
     </template>

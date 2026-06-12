@@ -22,4 +22,18 @@ describe('EditorPreview', () => {
     const withoutCover = mount(EditorPreview, { props: { sections: doc.sections, cssVars: {}, device: 'mobile', showCover: false } })
     expect(withoutCover.findComponent({ name: 'CoverModal' }).exists()).toBe(false)
   })
+  it('renders MusicPlayer when showing the cover with a musicUrl', () => {
+    const w = mount(EditorPreview, {
+      props: { sections: doc.sections, cssVars: {}, device: 'mobile', showCover: true, musicUrl: 'https://cdn/song.mp3' },
+      global: { stubs: { MusicPlayer: { name: 'MusicPlayer', props: ['src', 'playing'], template: '<div class="mp" />' } } },
+    })
+    expect(w.findComponent({ name: 'MusicPlayer' }).exists()).toBe(true)
+  })
+  it('does not render MusicPlayer without a musicUrl', () => {
+    const w = mount(EditorPreview, {
+      props: { sections: doc.sections, cssVars: {}, device: 'mobile', showCover: true },
+      global: { stubs: { MusicPlayer: { name: 'MusicPlayer', props: ['src', 'playing'], template: '<div class="mp" />' } } },
+    })
+    expect(w.findComponent({ name: 'MusicPlayer' }).exists()).toBe(false)
+  })
 })
