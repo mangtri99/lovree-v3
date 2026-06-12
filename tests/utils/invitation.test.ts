@@ -5,20 +5,20 @@ describe('assembleInvitation', () => {
   const theme = { tokens: { color: { primary: '#abc' } } }
   const inv = { id: 'i1', slug: 'x', type: 'wedding', status: 'published', tokenOverrides: { color: { primary: '#111' } } }
 
-  it('orders enabled sections by position and drops disabled', () => {
-    const rows = [
-      { type: 'quote', position: 2, enabled: true, content: {} },
-      { type: 'hero', position: 0, enabled: true, content: { title: 'T' } },
-      { type: 'gallery', position: 1, enabled: false, content: {} },
+  it('orders enabled sections from the document and drops disabled', () => {
+    const sections = [
+      { id: 'a', type: 'hero', enabled: true, content: { title: 'T' } },
+      { id: 'b', type: 'gallery', enabled: false, content: {} },
+      { id: 'c', type: 'quote', enabled: true, content: {} },
     ]
-    const out = assembleInvitation(inv as any, theme as any, rows as any)
-    expect(out.sections.map(s => s.type)).toEqual(['hero', 'quote'])
+    const out = assembleInvitation(inv as any, theme as any, sections as any)
+    expect(out.sections.map((s) => s.type)).toEqual(['hero', 'quote'])
   })
 
   it('validates content and exposes resolved css vars', () => {
-    const out = assembleInvitation(inv as any, theme as any, [{ type: 'hero', position: 0, enabled: true, content: { title: 'T' } }] as any)
+    const out = assembleInvitation(inv as any, theme as any, [{ id: 'a', type: 'hero', enabled: true, content: { title: 'T' } }] as any)
     expect(out.sections[0].content.title).toBe('T')
-    expect(out.sections[0].content.coupleName).toBe('') // default filled
-    expect(out.cssVars['--color-primary']).toBe('#111') // override wins
+    expect(out.sections[0].content.coupleName).toBe('')
+    expect(out.cssVars['--color-primary']).toBe('#111')
   })
 })
