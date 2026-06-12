@@ -1,7 +1,36 @@
 <script setup lang="ts">
-defineProps<{ kind: 'image' | 'audio' }>()
-defineEmits<{ uploaded: [string] }>()
+import { ref, inject } from 'vue'
+const props = defineProps<{ kind: 'image' | 'audio' }>()
+const emit = defineEmits<{ uploaded: [string] }>()
+const busy = ref(false)
+const error = ref('')
+const invitationId = inject<string>('invitationId', '')
+
+const accept = props.kind === 'image' ? 'image/png,image/jpeg,image/webp' : 'audio/mpeg'
+
+async function onChange(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  error.value = ''
+  busy.value = true
+  try {
+    const form = new FormData()
+    form.append('invitationId', invitationId)
+    form.append('kind', props.kind)
+    form.append('file', file)
+    const res = await $fetch<{ id: string; url: string }>('/api/admin/media', { method: 'POST', body: form })
+    emit('uploaded', res.id)
+  } catch (e: any) {
+    error.value = e?.data?.message ?? 'Upload gagal'
+  } finally {
+    busy.value = false
+  }
+}
 </script>
 <template>
-  <div><!-- media uploader placeholder, implemented in P2a-16 --></div>
+  <div>
+    <input type="file" :accept="accept" :disabled="busy" @change="onChange" />
+    <span v-if="busy" class="text-xs text-gray-500">Mengunggah…</span>
+    <span v-if="error" class="text-xs text-red-600">{{ error }}</span>
+  </div>
 </template>
