@@ -22,7 +22,11 @@ function emitWith(mut: (o: DesignOverrides) => void) {
 function colorValue(key: ColorKey): string {
   return props.modelValue.color?.[key] ?? props.themeTokens?.color?.[key] ?? '#000000'
 }
-function setColor(key: ColorKey, val: string) { emitWith((o) => { (o.color ??= {})[key] = val }) }
+function setColor(key: ColorKey, val: string) {
+  // Empty (e.g. the hex text input cleared → "ikut tema") removes the override,
+  // mirroring setFont; storing '' would emit an invalid value the server rejects.
+  emitWith((o) => { if (!val) { if (o.color) delete o.color[key] } else (o.color ??= {})[key] = val })
+}
 function clearColor(key: ColorKey) { emitWith((o) => { if (o.color) delete o.color[key] }) }
 function setFont(key: 'heading' | 'body', val: string) {
   emitWith((o) => { if (!val) { if (o.font) delete o.font[key] } else (o.font ??= {})[key] = val })
