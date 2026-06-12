@@ -28,7 +28,7 @@ async function save() {
   try {
     const res = await $fetch<{ ok: boolean; document: { sections: any[] } }>(`/api/admin/invitations/${id}/draft`, { method: 'PATCH', body: { document: editor.doc } })
     const adopt = reconcileSections(sent, editor.doc, res.document.sections)
-    if (adopt) editor.doc.sections.splice(0, editor.doc.sections.length, ...adopt)
+    if (adopt) editor.doc.sections.splice(0, editor.doc.sections.length, ...(adopt as typeof editor.doc.sections))
     saveState.value = 'saved'
   } catch { saveState.value = 'error' }
 }
