@@ -2,6 +2,7 @@
 import { ref, watch, provide } from 'vue'
 import { createEditorState } from '~/composables/useInvitationEditor'
 import { createDebouncer } from '~/composables/useAutosave'
+import { reconcileSections } from '~/composables/useReconcile'
 import SectionList from '~/components/editor/SectionList.vue'
 import EditorPreview from '~/components/editor/EditorPreview.vue'
 import SaveStatus from '~/components/editor/SaveStatus.vue'
@@ -23,8 +24,11 @@ const cssVars = ((data.value as any).cssVars ?? {}) as Record<string, string>
 
 async function save() {
   saveState.value = 'saving'
+  const sent = JSON.stringify(editor.doc)
   try {
-    await $fetch(`/api/admin/invitations/${id}/draft`, { method: 'PATCH', body: { document: editor.doc } })
+    const res = await $fetch<{ ok: boolean; document: { sections: any[] } }>(`/api/admin/invitations/${id}/draft`, { method: 'PATCH', body: { document: editor.doc } })
+    const adopt = reconcileSections(sent, editor.doc, res.document.sections)
+    if (adopt) editor.doc.sections.splice(0, editor.doc.sections.length, ...adopt)
     saveState.value = 'saved'
   } catch { saveState.value = 'error' }
 }
