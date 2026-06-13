@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
   let sections = inv.sections
   if (guestRow?.sessionId) {
     const [s] = await useDb().select({ targetEvent: sessions.targetEvent, timeStart: sessions.timeStart, timeEnd: sessions.timeEnd })
-      .from(sessions).where(eq(sessions.id, guestRow.sessionId)).limit(1)
+      .from(sessions).where(and(eq(sessions.id, guestRow.sessionId), eq(sessions.invitationId, inv.id))).limit(1)
     if (s) sections = applyGuestSession(inv.sections, s)
   }
 

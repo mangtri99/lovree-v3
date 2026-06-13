@@ -8,10 +8,16 @@ import { rowBelongsToInvitation } from '../../../../../utils/belongs'
 import { generateGuestCode } from '../../../../../utils/guest-code'
 
 const body = z.object({
-  names: z.array(z.string().transform((s) => s.trim()).refine((s) => s.length > 0, 'empty name')).min(1),
+  names: z.array(z.string().transform((s) => s.trim()).refine((s) => s.length > 0, 'empty name')).min(1).max(500),
   groupLabel: z.string().optional(),
   sessionId: z.string().uuid().nullable().optional(),
 })
+
+// Postgres unique_violation. Only a code collision should be retried; any other
+// DB error must surface, not be masked as "could not generate a unique code".
+function isUniqueViolation(e: any): boolean {
+  return e?.code === '23505' || /duplicate key|unique/i.test(e?.message ?? '')
+}
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')!
@@ -29,6 +35,9 @@ export default defineEventHandler(async (event) => {
     if (!rowBelongsToInvitation(s ?? null, id)) throw createError({ statusCode: 400, message: 'Invalid session' })
   }
 
+  // Bulk insert is not atomic: the neon-http driver is stateless and has no
+  // transaction support, so a mid-batch failure may leave earlier guests inserted.
+  // The client re-fetches the list afterward, so it always sees the real state.
   const created: Array<{ id: string; name: string; code: string }> = []
   for (const name of names) {
     let inserted: { id: string; name: string; code: string } | undefined
@@ -39,6 +48,7 @@ export default defineEventHandler(async (event) => {
           .returning({ id: guests.id, name: guests.name, code: guests.code })
         inserted = row
       } catch (e: any) {
+        if (!isUniqueViolation(e)) throw e // real error → surface it, don't retry/mask
         if (attempt === 4) throw createError({ statusCode: 500, message: 'Could not generate a unique code' })
       }
     }
