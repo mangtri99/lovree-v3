@@ -13,7 +13,7 @@ const links = [
     { label: "Dashboard", icon: "i-lucide-layout-dashboard", to: "/admin" },
     { label: "Undangan", icon: "i-lucide-mail", to: "/admin/invitations" },
   ],
-];
+] satisfies NavigationMenuItem[][];
 
 async function logout() {
   await $fetch("/api/auth/logout", { method: "POST" });
@@ -29,7 +29,7 @@ const userItems = computed(() => [
 
 <template>
   <UDashboardGroup>
-    <UDashboardSidebar>
+    <UDashboardSidebar id="default" collapsible resizable>
       <template #header>
         <span class="font-semibold">Lovree</span>
       </template>
@@ -53,5 +53,6 @@ const userItems = computed(() => [
       </template>
     </UDashboardSidebar>
     <slot />
+    <NotificationsSlideover />
   </UDashboardGroup>
 </template>
