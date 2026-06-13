@@ -24,15 +24,24 @@ const editor = createEditorState((data.value as any).draftDocument ?? { sections
 const device = ref<'mobile' | 'desktop'>('mobile')
 const showCover = ref(false)
 const saveState = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
-const themeTokens = ((data.value as any).themeTokens ?? {}) as Record<string, any>
+const themeTokens = ref<Record<string, any>>(((data.value as any).themeTokens ?? {}) as Record<string, any>)
+const themeId = ref<string>((data.value as any).themeId ?? '')
+const { data: themesList } = await useFetch<any>('/api/admin/themes')
+const themeItems = computed(() => ((themesList.value as any[]) ?? []).map((t) => ({ label: t.name, value: t.id })))
 const overrides = ref<DesignOverrides>(((data.value as any).tokenOverrides ?? {}) as DesignOverrides)
-const cssVars = computed(() => tokensToCssVars(resolveTokens(themeTokens as any, overrides.value as any)))
+const cssVars = computed(() => tokensToCssVars(resolveTokens(themeTokens.value as any, overrides.value as any)))
 
 const designDebouncer = createDebouncer(saveDesign, 600)
 async function saveDesign() {
   try { await $fetch(`/api/admin/invitations/${id}/design`, { method: 'PATCH', body: { tokenOverrides: overrides.value } }) } catch { /* non-fatal; preview already updated */ }
 }
 watch(overrides, () => designDebouncer.schedule(), { deep: true })
+async function switchTheme(newId: string) {
+  const t = ((themesList.value as any[]) ?? []).find((x) => x.id === newId)
+  if (t) themeTokens.value = t.tokens
+  try { await $fetch(`/api/admin/invitations/${id}/theme`, { method: 'PATCH', body: { themeId: newId } }) } catch { /* non-fatal; preview already updated */ }
+}
+watch(themeId, (v) => { if (v) switchTheme(v) })
 const musicUrl = ref<string | null>((data.value as any).musicUrl ?? null)
 async function setMusic(mediaId: string | null) {
   await $fetch(`/api/admin/invitations/${id}/music`, { method: 'PATCH', body: { musicMediaId: mediaId } })
@@ -75,6 +84,9 @@ async function publish() {
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div class="space-y-4">
           <InvitationSettings v-model:music-url="musicUrl" :on-set-music="setMusic" />
+          <UFormField label="Tema" class="mb-3">
+            <USelect v-model="themeId" :items="themeItems" class="w-full" />
+          </UFormField>
           <DesignControls v-model="overrides" :theme-tokens="themeTokens" />
           <SectionList
             :sections="editor.doc.sections"
