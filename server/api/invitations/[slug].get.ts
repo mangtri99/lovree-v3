@@ -1,9 +1,10 @@
 import { loadInvitationBySlug } from '../../utils/invitation'
 import { canView } from '../../utils/visibility'
-import { guests, sessions } from '../../db/schema'
-import { eq, and } from 'drizzle-orm'
+import { guests, sessions, rsvps } from '../../db/schema'
+import { eq, and, desc, isNotNull, ne } from 'drizzle-orm'
 import { useDb } from '../../db'
 import { applyGuestSession } from '../../utils/session-apply'
+import { toGuestbookEntries } from '../../utils/rsvp'
 import { publishedEtag } from '../../utils/etag'
 
 export default defineEventHandler(async (event) => {
@@ -42,6 +43,13 @@ export default defineEventHandler(async (event) => {
     if (s) sections = applyGuestSession(inv.sections, s)
   }
 
+  const rsvpRows = await useDb().select({ name: rsvps.name, attendance: rsvps.attendance, message: rsvps.message })
+    .from(rsvps)
+    .where(and(eq(rsvps.invitationId, inv.id), isNotNull(rsvps.message), ne(rsvps.message, '')))
+    .orderBy(desc(rsvps.createdAt))
+    .limit(50)
+  const guestbook = toGuestbookEntries(rsvpRows)
+
   const { ownerId, publishedAt, ...publicData } = inv
-  return { ...publicData, sections, guestName }
+  return { ...publicData, sections, guestName, guestbook }
 })
