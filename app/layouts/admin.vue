@@ -21,10 +21,9 @@ const userItems = computed(() => [[
 
 <template>
   <UDashboardGroup>
-    <UDashboardSidebar collapsible resizable>
-      <template #header="{ collapsed }">
-        <span v-if="!collapsed" class="font-semibold">Lovree</span>
-        <UDashboardSidebarCollapse class="ml-auto" />
+    <UDashboardSidebar>
+      <template #header>
+        <span class="font-semibold">Lovree</span>
       </template>
 
       <UNavigationMenu orientation="vertical" :items="links" />
