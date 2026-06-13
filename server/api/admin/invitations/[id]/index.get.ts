@@ -25,5 +25,6 @@ export default defineEventHandler(async (event) => {
     themeTokens: (theme?.tokens as any) ?? {},
     tokenOverrides: (inv!.tokenOverrides as any) ?? {},
     musicMediaId: inv!.musicMediaId, musicUrl,
+    waTemplate: inv!.waTemplate,
   }
 })
