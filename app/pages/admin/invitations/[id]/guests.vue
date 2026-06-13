@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { buildGuestLink, buildWhatsappShare } from '~/utils/guest-link'
+import { buildGuestLink } from '~/utils/guest-link'
+import { effectiveWaTemplate, renderWaTemplate, invitationWaVars, formatTimeRange, buildWhatsappUrl } from '~/utils/wa-template'
 
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 
@@ -10,6 +11,16 @@ const id = route.params.id as string
 const { data: inv } = await useFetch<any>(`/api/admin/invitations/${id}`)
 if (!inv.value) throw createError({ statusCode: 404, statusMessage: 'Tidak ditemukan' })
 const slug = computed(() => (inv.value as any)?.slug ?? '')
+
+const template = ref(effectiveWaTemplate((inv.value as any)?.waTemplate))
+const templateOpen = ref(false)
+const templateDraft = ref('')
+function openTemplate() { templateDraft.value = template.value; templateOpen.value = true }
+async function saveTemplate() {
+  await $fetch(`/api/admin/invitations/${id}/wa-template`, { method: 'PATCH', body: { template: templateDraft.value } })
+  template.value = effectiveWaTemplate(templateDraft.value)
+  templateOpen.value = false
+}
 
 const eventNames = computed<string[]>(() => {
   const secs = ((inv.value as any)?.draftDocument?.sections ?? []) as any[]
@@ -70,8 +81,19 @@ async function copyLink(code: string) {
   copied.value = code
   setTimeout(() => { if (copied.value === code) copied.value = null }, 1500)
 }
-function shareWa(code: string, name: string) {
-  window.open(buildWhatsappShare(window.location.origin, slug.value, code, name), '_blank')
+function shareWa(g: any) {
+  const base = invitationWaVars(((inv.value as any)?.draftDocument?.sections) ?? [])
+  const sess = sessionById(g.sessionId)
+  const ts = sess ? sess.timeStart : base.timeStart
+  const te = sess ? sess.timeEnd : base.timeEnd
+  const vars = {
+    GUEST_NAME: g.name,
+    COUPLE_NAME: base.coupleName,
+    DATE: base.date,
+    TIME: formatTimeRange(ts, te),
+    URL: buildGuestLink(window.location.origin, slug.value, g.code),
+  }
+  window.open(buildWhatsappUrl(renderWaTemplate(effectiveWaTemplate(template.value), vars)), '_blank')
 }
 </script>
 
@@ -80,6 +102,7 @@ function shareWa(code: string, name: string) {
     <template #header>
       <UDashboardNavbar title="Kelola Tamu">
         <template #right>
+          <UButton variant="link" label="Template Pesan" @click="openTemplate" />
           <UButton variant="link" :to="`/admin/invitations/${id}/edit`" label="Editor" />
         </template>
       </UDashboardNavbar>
@@ -138,7 +161,7 @@ function shareWa(code: string, name: string) {
                 <td class="font-mono text-xs">{{ g.code }}</td>
                 <td class="flex justify-end gap-1 py-1">
                   <UButton size="xs" variant="ghost" :label="copied === g.code ? 'Tersalin' : 'Salin link'" @click="copyLink(g.code)" />
-                  <UButton size="xs" variant="ghost" label="WA" @click="shareWa(g.code, g.name)" />
+                  <UButton size="xs" variant="ghost" label="WA" @click="shareWa(g)" />
                   <UButton size="xs" color="error" variant="ghost" label="Hapus" @click="delGuest(g.id)" />
                 </td>
               </tr>
@@ -146,6 +169,17 @@ function shareWa(code: string, name: string) {
           </table>
         </UCard>
       </div>
+
+        <UModal v-model:open="templateOpen" title="Template Pesan WhatsApp">
+          <template #body>
+            <p class="mb-2 text-xs text-gray-500">Placeholder: {GUEST_NAME} {COUPLE_NAME} {DATE} {TIME} {URL}</p>
+            <UTextarea v-model="templateDraft" :rows="14" class="w-full" />
+            <div class="mt-3 flex justify-end gap-2">
+              <UButton variant="ghost" label="Batal" @click="templateOpen = false" />
+              <UButton label="Simpan" @click="saveTemplate" />
+            </div>
+          </template>
+        </UModal>
     </template>
   </UDashboardPanel>
 </template>
