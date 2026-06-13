@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, provide } from 'vue'
 import CoverModal from './CoverModal.vue'
 import MusicPlayer from './MusicPlayer.vue'
 import SectionRenderer from './SectionRenderer.vue'
 
 const props = defineProps<{
-  data: { cssVars: Record<string, string>; musicUrl: string | null; sections: Array<{ type: string; content: any }> }
+  data: { cssVars: Record<string, string>; musicUrl: string | null; sections: Array<{ type: string; content: any }>; guestbook?: Array<{ name: string; message: string; attendance: string | null }> }
   guestName: string
 }>()
 
 const opened = ref(false)
+const guestbook = ref(props.data.guestbook ?? [])
+provide('guestbook', guestbook)
+provide('guestName', props.guestName)
+
 const styleStr = computed(() => {
   const vars = Object.entries(props.data.cssVars).map(([k, v]) => `${k}: ${v}`).join('; ')
   return `${vars}; font-family: var(--font-body)`
