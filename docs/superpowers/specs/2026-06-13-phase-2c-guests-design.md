@@ -1,50 +1,85 @@
-# Lovree v3 — Design Spec: Phase 2c (Kelola Tamu / Guest Management)
+# Lovree v3 — Design Spec: Phase 2c (Kelola Tamu & Sesi / Guest + Session Management)
 
 - **Date:** 2026-06-13
 - **Status:** Approved for planning
 - **Builds on:** Phase 1 (public renderer + `?guest=` resolution), Phase 2a–2b. Same branch `feat/phase-2b-media`.
-- **Scope:** Admin-side guest management for an invitation: add guests (single + bulk paste), list, delete, with an auto-generated per-guest code, a copyable personal invite link, and a WhatsApp share. No RSVP status (Phase 3), no guest editing, no CSV file import.
+- **Scope:** Admin-side guest management (add single + bulk, list, delete, per-guest code, copyable personal link, WhatsApp share) **and** time-session management (CRUD sessions; assign an optional session to a guest; a guest's session overrides the start/end time of one targeted event on that guest's personalized invitation). No RSVP status (Phase 3), no guest editing, no CSV file import.
 
 ## 1. Background & Goal
 
-The `guests` table and the public `?guest=<code>` → name resolution already exist (Phase 1): `server/api/invitations/[slug].get.ts` looks up `(invitationId, code)` and the cover greets the guest by name; an unknown code falls back to using the raw query value as the name. What's missing is any way to **create and manage** guests. This phase adds the admin surface so a customer can build their guest list and share a personalized link per guest.
+The `guests` table and the public `?guest=<code>` → name resolution already exist (Phase 1): `server/api/invitations/[slug].get.ts` looks up `(invitationId, code)` and the cover greets the guest by name; an unknown code falls back to the raw query value. What's missing is any way to **create and manage** guests, and a way to give different guests different reception time-slots ("sesi").
 
-**Goal:** From an invitation's guest page, an owner adds guests (one at a time or by pasting many names), sees each guest's unique code, copies that guest's personal invite URL, shares it via WhatsApp with a prefilled message, and deletes guests.
+**Goal:** From an invitation's guest page an owner builds the guest list (single or bulk), defines time sessions, optionally assigns a session to each guest, and shares a personalized link. When a guest with a session opens their link, the targeted event's start/end time on their invitation shows the session's time; guests without a session see the event's default time.
 
 ## 2. Decisions carried in from brainstorming
 
-- **Capabilities (all in scope):** add single, bulk add (paste names), list, delete, copy per-guest link, WhatsApp share.
-- **Code format:** human-readable `slugify(name) + '-' + <short random>` (e.g. `budi-x7k2`), reusing the existing `slugify`. Uniqueness per invitation is enforced by the existing `unique(invitationId, code)` constraint; a collision triggers a regenerate-and-retry.
-- **Link building:** client-side from `window.location.origin` + the invitation `slug` + the guest `code` (no server origin config needed).
-- **WhatsApp:** `https://wa.me/?text=<encoded>` (no stored phone; opens the share/contact picker with a prefilled Indonesian message).
-- **Navigation:** a "Tamu" link on each row of the invitations list and in the editor navbar.
+- **Guest capabilities (all in scope):** add single, bulk add (paste names), list, delete, copy per-guest link, WhatsApp share.
+- **Guest code format:** `slugify(name) + '-' + <short random>` (e.g. `budi-x7k2`), reusing `slugify`. Uniqueness per invitation enforced by the existing `unique(invitationId, code)` constraint; collision → regenerate-and-retry.
+- **Sessions:** a session has `targetEvent` (the name of the event it overrides), `timeStart`, `timeEnd` (free text; e.g. `"09:00"` / `"18:00"` / `"Selesai"`). CRUD on the guest page.
+- **Session ↔ event binding:** by **event name** — at render, an event whose `name` equals the session's `targetEvent` has its `timeStart`/`timeEnd` replaced. Robust to event reordering; **breaks if the targeted event is renamed** (documented caveat — falls back to the event's own time, never errors).
+- **Guest ↔ session:** `guests.sessionId` nullable. Assigned (optionally) when adding a guest.
+- **No extra query param:** the URL stays `?guest=<code>`. The session is derived server-side from the guest row — single source of truth, not URL-overridable.
+- **Link building:** client-side from `window.location.origin` + `slug` + `code`.
+- **WhatsApp:** `https://wa.me/?text=<encoded>` with a prefilled Indonesian message.
+- **Navigation:** a "Tamu" link on each invitations-list row and in the editor navbar.
 
-## 3. Data model
+## 3. Data model (migration 0003)
 
-No migration. The existing `guests` table is used as-is:
+Add a `sessions` table and a `sessionId` column on `guests` (Drizzle schema → `drizzle-kit generate` produces migration `0003`).
+
+```ts
+export const sessions = pgTable('sessions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  invitationId: uuid('invitation_id').notNull().references(() => invitations.id),
+  targetEvent: text('target_event').notNull(), // event name this session overrides
+  timeStart: text('time_start').notNull().default(''),
+  timeEnd: text('time_end').notNull().default(''),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+})
 ```
-guests: id (uuid pk), invitationId (uuid fk→invitations), name (text), code (text),
-        groupLabel (text nullable), createdAt; UNIQUE(invitationId, code)
-```
+Add to `guests`: `sessionId: uuid('session_id').references(() => sessions.id)` (nullable). Existing `guests` columns unchanged (`unique(invitationId, code)` kept).
+
+(Define `sessions` before `guests` in the schema file, or use the lazy `() => sessions.id` reference, so the FK resolves.)
 
 ## 4. Pure utilities (testable, no I/O)
 
 `server/utils/guest-code.ts`:
 ```ts
 import { slugify } from './slug'
-// Deterministic given `rand`; caller supplies the random suffix (nanoid) so the
-// function is testable and the endpoint controls retry-on-collision.
 export function generateGuestCode(name: string, rand: string): string {
-  return slugify(name, rand) // slugify already lowercases/hyphenates and falls back to 'undangan'
+  return slugify(name, rand) // lowercases/hyphenates; empty name → 'undangan-<rand>'
 }
-// One name per line, trimmed, blanks dropped. Order preserved. No de-duplication
-// (two guests may legitimately share a name; they get distinct codes).
 export function parseBulkNames(text: string): string[] {
   return (text ?? '').split('\n').map((s) => s.trim()).filter((s) => s.length > 0)
 }
 ```
 
-`app/utils/guest-link.ts` (client-side link/share builders; pure):
+`server/utils/session-apply.ts`:
+```ts
+export interface GuestSession { targetEvent: string; timeStart: string; timeEnd: string }
+// Returns a new sections array. For each `event` section, any event item whose
+// `name` matches the session's targetEvent has its timeStart/timeEnd replaced.
+// A null session (guest without one) returns the sections unchanged (identity).
+export function applyGuestSession(sections: any[], session: GuestSession | null): any[] {
+  if (!session) return sections
+  return sections.map((s) => {
+    if (s.type !== 'event') return s
+    const events = (s.content?.events ?? []).map((e: any) =>
+      e.name === session.targetEvent ? { ...e, timeStart: session.timeStart, timeEnd: session.timeEnd } : e)
+    return { ...s, content: { ...s.content, events } }
+  })
+}
+```
+
+`server/utils/belongs.ts` (or extend the existing media-belongs pattern) — a small predicate reused for guest+session ownership:
+```ts
+export function rowBelongsToInvitation(row: { invitationId: string } | null, invitationId: string): boolean {
+  return !!row && row.invitationId === invitationId
+}
+```
+(Used to reject a `guestId`/`sessionId` from another invitation. Mirrors `mediaBelongsToInvitation`.)
+
+`app/utils/guest-link.ts` (client-side, pure):
 ```ts
 export function buildGuestLink(origin: string, slug: string, code: string): string {
   return `${origin}/u/${slug}?guest=${encodeURIComponent(code)}`
@@ -58,47 +93,62 @@ export function buildWhatsappShare(origin: string, slug: string, code: string, n
 
 ## 5. Endpoints
 
-All under `server/api/admin/invitations/[id]/guests`. Every handler loads the invitation, runs `assertOwnerOr404(inv, session.user?.id)` (404 on non-owner — no existence leak; ownerId from session, never body).
+All under `server/api/admin/invitations/[id]/…`. Every handler loads the invitation and runs `assertOwnerOr404(inv, session.user?.id)` (404 on non-owner; ownerId from session, never body).
 
-- **`GET …/guests`** → `{ guests: Array<{ id, name, code, groupLabel }> }`, ordered by `createdAt`.
-- **`POST …/guests`** → body validated with Zod: `{ names: string[] (min 1, each non-empty after trim), groupLabel?: string }`. For each name: generate `code = generateGuestCode(name, nanoid(5))`, insert; on the rare unique-constraint violation, regenerate the code and retry (cap a few attempts). Returns `{ guests: [...created] }`. (Single-add is just a 1-element `names` array; the page sends `parseBulkNames` output for bulk.)
-- **`DELETE …/guests/:guestId`** → verify the guest row exists AND `guest.invitationId === :id` (else 404), then delete. Returns `{ ok: true }`.
+**Sessions:**
+- `GET …/sessions` → `{ sessions: Array<{ id, targetEvent, timeStart, timeEnd }> }` ordered by `createdAt`.
+- `POST …/sessions` → Zod body `{ targetEvent: string (min 1), timeStart?: string, timeEnd?: string }`. Insert. Returns the created row. (No check that `targetEvent` matches an existing event name — the form populates it from the document, and a non-matching name simply yields no override; this keeps the endpoint decoupled from document contents.)
+- `DELETE …/sessions/:sessionId` → verify `rowBelongsToInvitation(sessionRow, :id)` else 404, delete. (Guests referencing it: set their `sessionId` to null in the same transaction so no dangling FK / orphan reference.)
 
-Insert/delete operate only within the owned invitation; a guestId from another invitation is rejected by the `invitationId` check.
+**Guests:**
+- `GET …/guests` → `{ guests: Array<{ id, name, code, groupLabel, sessionId }> }` ordered by `createdAt`.
+- `POST …/guests` → Zod body `{ names: string[] (min 1, each non-empty after trim), groupLabel?: string, sessionId?: string | null }`. If `sessionId` is provided, verify it belongs to this invitation (`rowBelongsToInvitation`) else 400. For each name: `code = generateGuestCode(name, nanoid(5))`, insert with `sessionId`; on unique-constraint violation regenerate the code and retry (cap attempts). Returns `{ guests: [...created] }`.
+- `DELETE …/guests/:guestId` → verify `rowBelongsToInvitation(guestRow, :id)` else 404, delete. Returns `{ ok: true }`.
 
-## 6. Page UI
+## 6. Public route — personalized session times
+
+`server/api/invitations/[slug].get.ts` already resolves `?guest=<code>` to a name via `resolveGuestName`. Extend it: when the guest query matches a real guest row with a non-null `sessionId`, load that session and apply `applyGuestSession(sections, session)` to the assembled sections before returning. Concretely:
+- After `loadInvitationBySlug`, when resolving the guest, also fetch the guest row (by `invitationId` + `code`) to get `sessionId` (the existing `resolveGuestName` lookup can be widened to return the row, or a second small query runs).
+- If a session is found, replace `inv.sections` with `applyGuestSession(inv.sections, session)`.
+- A free-text `?guest=Eko` (no matching code) → no row → no session → default times. Unchanged behavior otherwise.
+
+The override is request-scoped; the stored published document is never mutated.
+
+## 7. Page UI
 
 `app/pages/admin/invitations/[id]/guests.vue` (admin layout, `middleware: 'admin'`, `UDashboardPanel`):
+- Loads the invitation (`GET /api/admin/invitations/:id` — for `slug` and the event names from `draftDocument`), the session list (`GET …/sessions`), and the guest list (`GET …/guests`).
+- **Sessions block:** list existing sessions (`targetEvent timeStart–timeEnd`, delete button). Add form: a **target-event select** (options = event names extracted from the invitation's event section(s); disabled with a hint "Tambah acara dulu di editor" when none) + `timeStart` + `timeEnd` inputs + "Tambah Sesi".
+- **Add single guest:** name input + optional group input + **session select** (optional; options = sessions, shown as `targetEvent timeStart–timeEnd`, plus a "— tanpa sesi —" default) + "Tambah".
+- **Bulk add:** textarea ("Satu nama per baris") + optional group + optional session select (applied to the whole batch) + "Tambah Semua" → `POST { names: parseBulkNames(text), groupLabel, sessionId }`. Disabled when the parsed list is empty.
+- **Guest table:** columns Nama, Grup, Sesi (the assigned session's label or "—"), Kode, actions: **Copy link** (`buildGuestLink` → clipboard, brief "Tersalin"), **WA** (`window.open(buildWhatsappShare(...), '_blank')`), **Hapus** (`DELETE`). `origin` from `window.location.origin` (computed on click / `import.meta.client`).
+- Empty-state hints for no sessions / no guests.
 
-- Loads the invitation (`GET /api/admin/invitations/:id`, for `slug`) and the guest list (`GET …/guests`).
-- **Add single:** name input + optional group input + "Tambah" → `POST { names: [name], groupLabel }`, prepend/refresh list.
-- **Bulk add:** textarea (placeholder "Satu nama per baris") + optional group input + "Tambah Semua" → `POST { names: parseBulkNames(textarea), groupLabel }`. Disabled when the parsed list is empty.
-- **Guest table:** columns Nama, Grup, Kode, and actions: **Copy link** (writes `buildGuestLink(origin, slug, code)` to clipboard, shows a brief "Tersalin"), **WA** (anchor/`window.open` to `buildWhatsappShare(...)`, `target=_blank`), **Hapus** (`DELETE`, removes the row). `origin` from `window.location.origin` (guard for SSR: compute on click / `import.meta.client`).
-- Empty state: a hint when there are no guests yet.
+## 8. Navigation
 
-## 7. Navigation
+- `app/pages/admin/invitations/index.vue`: add a "Tamu" `UButton` (`variant="link"`, `:to="/admin/invitations/${inv.id}/guests"`) beside "Edit".
+- Editor (`[id]/edit.vue`) navbar: add a "Tamu" link/button to the guest page.
 
-- `app/pages/admin/invitations/index.vue`: add a "Tamu" `UButton` (`variant="link"`, `:to="/admin/invitations/${inv.id}/guests"`) next to the existing "Edit" link in each row.
-- Editor navbar (`[id]/edit.vue`): add a "Tamu" link/button to the guest page so the owner can switch from editing to guest management.
+## 9. Testing
 
-## 8. Testing
+- **Pure:** `generateGuestCode('Budi Santoso','x7k2')` → `'budi-santoso-x7k2'`; empty name → `'undangan-x7k2'`. `parseBulkNames("Budi\n  \nSiti \n")` → `['Budi','Siti']`. `buildGuestLink` exact URL; `buildWhatsappShare` → `wa.me/?text=` containing the encoded name + link. `applyGuestSession`: overrides the matching event's times, leaves non-matching events and non-event sections untouched, and is identity for a null session; original sections not mutated. `rowBelongsToInvitation` true/false/null.
+- **Endpoints:** owner-guard 404 (via `assertOwnerOr404`); `DELETE guests/sessions` rejects a row from another invitation (predicate); `POST guests` with a foreign `sessionId` → 400; `POST guests` empty `names` → 400 (Zod); deleting a session nulls referencing guests' `sessionId`.
+- **Component:** bulk textarea + "Tambah Semua" posts the parsed names + selected `sessionId`; the guest row renders Copy/WA/Hapus and Copy writes the expected link (clipboard mocked); the session add form's target-event select is disabled when there are no events.
 
-- **Pure:** `generateGuestCode('Budi Santoso', 'x7k2')` → `'budi-santoso-x7k2'`; empty name → `'undangan-x7k2'`. `parseBulkNames("Budi\n  \nSiti \n")` → `['Budi','Siti']`. `buildGuestLink('https://x.com','elrumi','budi-x7k2')` → exact URL. `buildWhatsappShare` → `https://wa.me/?text=` containing the encoded name + link.
-- **Endpoints (pure-core + thin shell):** owner-guard returns 404 for a non-owner (via `assertOwnerOr404`, already tested) — covered by the belongs check; `DELETE` rejects a guest from another invitation (a small pure predicate `guestBelongsToInvitation(guest, invitationId)` mirrored on `mediaBelongsToInvitation`, unit-tested). POST validation rejects an empty `names` array (Zod).
-- **Component:** the bulk textarea + "Tambah Semua" calls POST with the parsed names; the guest row renders Copy/WA/Hapus and the copy action writes the expected link (clipboard mocked).
-
-## 9. Out of Scope
+## 10. Out of Scope
 
 - RSVP status / attendance column — Phase 3.
-- Editing a guest's name/group (delete + re-add instead).
-- CSV/Excel file import; WhatsApp blast/automation (the share opens the app with prefilled text, user sends manually).
-- Per-guest phone storage.
-- Pagination (guest lists are expected in the hundreds at most; a simple list is fine — revisit in Phase 4 if needed).
+- Editing a guest or session in place (delete + re-add instead).
+- CSV/Excel file import; WhatsApp blast/automation.
+- Per-guest phone storage; binding a session to multiple events or to a fixed event id (name-binding only).
+- Pagination.
 
-## 10. Success Criteria
+## 11. Success Criteria
 
-1. An owner adds guests one at a time and in bulk (paste names); each appears in the table with a unique `code`.
-2. "Copy link" copies `/u/:slug?guest=:code`; opening that link greets the guest by name on the cover.
-3. "WA" opens WhatsApp with a prefilled message containing the guest's name and personal link.
-4. "Hapus" deletes the guest; a non-owner, or a guestId belonging to another invitation, is rejected with 404.
+1. An owner adds guests single + bulk; each appears with a unique `code`.
+2. "Copy link" copies `/u/:slug?guest=:code`; opening it greets the guest by name.
+3. "WA" opens WhatsApp with a prefilled message containing the guest's name + link.
+4. "Hapus" deletes the guest; a non-owner or a foreign `guestId`/`sessionId` is rejected (404 / 400).
 5. The guest page is reachable from the invitations list and the editor.
+6. An owner creates a session (target event + start/end), assigns it to a guest; that guest's link shows the session's time on the targeted event, while a guest without a session (or one targeting a renamed/absent event) sees the default event time.
+7. Deleting a session removes it and clears it from any guest that referenced it; no error on those guests' links.
