@@ -26,6 +26,7 @@ export const invitations = pgTable('invitations', {
   tokenOverrides: jsonb('token_overrides').notNull().default({}),
   status: text('status').notNull().default('draft'),
   musicMediaId: uuid('music_media_id'),
+  waTemplate: text('wa_template').notNull().default(''),
   draftDocument: jsonb('draft_document').notNull().default({ sections: [] }),
   publishedDocument: jsonb('published_document'),
   publishedAt: timestamp('published_at', { withTimezone: true }),
