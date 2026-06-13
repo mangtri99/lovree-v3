@@ -1,0 +1,1 @@
+ALTER TABLE "invitations" ADD COLUMN "wa_template" text DEFAULT '' NOT NULL;

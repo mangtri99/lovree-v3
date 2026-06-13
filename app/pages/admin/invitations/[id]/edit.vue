@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, provide } from 'vue'
+import { ref, watch, provide, computed } from 'vue'
 import { createEditorState } from '~/composables/useInvitationEditor'
 import { createDebouncer } from '~/composables/useAutosave'
 import { reconcileSections } from '~/composables/useReconcile'
@@ -7,6 +7,9 @@ import SectionList from '~/components/editor/SectionList.vue'
 import EditorPreview from '~/components/editor/EditorPreview.vue'
 import SaveStatus from '~/components/editor/SaveStatus.vue'
 import InvitationSettings from '~/components/editor/InvitationSettings.vue'
+import DesignControls from '~/components/editor/DesignControls.vue'
+import { resolveTokens, tokensToCssVars } from '~~/server/theme/tokens'
+import type { DesignOverrides } from '~~/server/theme/design-validate'
 
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 
@@ -21,7 +24,15 @@ const editor = createEditorState((data.value as any).draftDocument ?? { sections
 const device = ref<'mobile' | 'desktop'>('mobile')
 const showCover = ref(false)
 const saveState = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
-const cssVars = ((data.value as any).cssVars ?? {}) as Record<string, string>
+const themeTokens = ((data.value as any).themeTokens ?? {}) as Record<string, any>
+const overrides = ref<DesignOverrides>(((data.value as any).tokenOverrides ?? {}) as DesignOverrides)
+const cssVars = computed(() => tokensToCssVars(resolveTokens(themeTokens as any, overrides.value as any)))
+
+const designDebouncer = createDebouncer(saveDesign, 600)
+async function saveDesign() {
+  try { await $fetch(`/api/admin/invitations/${id}/design`, { method: 'PATCH', body: { tokenOverrides: overrides.value } }) } catch { /* non-fatal; preview already updated */ }
+}
+watch(overrides, () => designDebouncer.schedule(), { deep: true })
 const musicUrl = ref<string | null>((data.value as any).musicUrl ?? null)
 async function setMusic(mediaId: string | null) {
   await $fetch(`/api/admin/invitations/${id}/music`, { method: 'PATCH', body: { musicMediaId: mediaId } })
@@ -53,6 +64,8 @@ async function publish() {
     <template #header>
       <UDashboardNavbar title="Editor">
         <template #right>
+          <UButton variant="link" :to="`/admin/invitations/${id}/guests`" label="Tamu" />
+          <UButton variant="link" :to="`/admin/invitations/${id}/rsvp`" label="RSVP" />
           <SaveStatus :state="saveState" />
           <UButton label="Publish" :loading="publishing" @click="publish" />
         </template>
@@ -62,6 +75,7 @@ async function publish() {
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div class="space-y-4">
           <InvitationSettings v-model:music-url="musicUrl" :on-set-music="setMusic" />
+          <DesignControls v-model="overrides" :theme-tokens="themeTokens" />
           <SectionList
             :sections="editor.doc.sections"
             @add="editor.addSection"

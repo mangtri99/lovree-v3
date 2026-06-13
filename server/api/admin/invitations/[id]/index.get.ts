@@ -22,6 +22,9 @@ export default defineEventHandler(async (event) => {
     id: inv!.id, slug: inv!.slug, type: inv!.type, status: inv!.status,
     themeId: inv!.themeId, draftDocument: inv!.draftDocument,
     publishedAt: inv!.publishedAt, cssVars,
+    themeTokens: (theme?.tokens as any) ?? {},
+    tokenOverrides: (inv!.tokenOverrides as any) ?? {},
     musicMediaId: inv!.musicMediaId, musicUrl,
+    waTemplate: inv!.waTemplate,
   }
 })

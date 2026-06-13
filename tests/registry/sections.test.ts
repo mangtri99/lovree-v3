@@ -62,6 +62,18 @@ describe('gallery resilient validation', () => {
   })
 })
 
+describe('custom section', () => {
+  it('defaults to an empty title and no rows', () => {
+    const out = validateContent('custom', {})
+    expect(out).toEqual({ title: '', items: [] })
+  })
+  it('preserves filled rows and defaults an empty row\'s fields (section not reset)', () => {
+    const out = validateContent('custom', { title: 'Dress Code', items: [{ label: 'Pria', value: 'Batik' }, {}] })
+    expect(out.title).toBe('Dress Code')
+    expect(out.items).toEqual([{ label: 'Pria', value: 'Batik' }, { label: '', value: '' }])
+  })
+})
+
 describe('couple person photo', () => {
   it('defaults photo to an empty object', () => {
     const out = validateContent('couple', { people: [{ name: 'Willy' }] })

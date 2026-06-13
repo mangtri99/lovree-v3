@@ -26,11 +26,21 @@ export const invitations = pgTable('invitations', {
   tokenOverrides: jsonb('token_overrides').notNull().default({}),
   status: text('status').notNull().default('draft'),
   musicMediaId: uuid('music_media_id'),
+  waTemplate: text('wa_template').notNull().default(''),
   draftDocument: jsonb('draft_document').notNull().default({ sections: [] }),
   publishedDocument: jsonb('published_document'),
   publishedAt: timestamp('published_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+})
+
+export const sessions = pgTable('sessions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  invitationId: uuid('invitation_id').notNull().references(() => invitations.id),
+  targetEvent: text('target_event').notNull(),
+  timeStart: text('time_start').notNull().default(''),
+  timeEnd: text('time_end').notNull().default(''),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 })
 
 export const guests = pgTable('guests', {
@@ -39,6 +49,7 @@ export const guests = pgTable('guests', {
   name: text('name').notNull(),
   code: text('code').notNull(),
   groupLabel: text('group_label'),
+  sessionId: uuid('session_id').references(() => sessions.id),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 }, (t) => ({ uniqCode: unique().on(t.invitationId, t.code) }))
 
