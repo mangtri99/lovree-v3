@@ -5,6 +5,7 @@ import { useDb } from './index'
 import { users, themes, invitations, guests, media } from './schema'
 import { hashUserPassword } from '../utils/password'
 import { SECTION_TYPES, defaultContent } from '../registry/sections'
+import { CURATED_THEMES } from '../theme/curated-themes'
 
 function seedContent(type: string, base: any) {
   if (type === 'hero') return { ...base, title: 'The Wedding Of', coupleName: 'Willy & Debby', date: '2026-09-01' }
@@ -18,11 +19,10 @@ async function main() {
   const [owner] = await db.insert(users).values({
     email: 'demo@lovree.com', passwordHash: await hashUserPassword('password123'), name: 'Demo Owner',
   }).returning()
-  const [theme] = await db.insert(themes).values({
-    name: 'Radiant Love',
-    tokens: { color: { primary: '#8b5e3c', secondary: '#c8a97e' }, font: { heading: 'Cormorant Garamond', body: 'Poppins' } },
-    previewImage: null,
-  }).returning()
+  const insertedThemes = await db.insert(themes)
+    .values(CURATED_THEMES.map((t) => ({ name: t.name, tokens: t.tokens, previewImage: null })))
+    .returning()
+  const theme = insertedThemes[0] // Radiant Love (default/demo)
 
   const doc = {
     sections: SECTION_TYPES.map((type) => ({
