@@ -75,6 +75,21 @@ async function delGuest(gid: string) {
   await refreshGuests()
 }
 
+const search = ref('')
+const filteredGuests = computed(() => {
+  const q = search.value.trim().toLowerCase()
+  if (!q) return guests.value
+  return guests.value.filter((g) => g.name.toLowerCase().includes(q) || (g.groupLabel ?? '').toLowerCase().includes(q))
+})
+const groupCount = computed(() => new Set(guests.value.map((g) => g.groupLabel).filter(Boolean)).size)
+const columns = [
+  { accessorKey: 'name', header: 'Nama' },
+  { accessorKey: 'groupLabel', header: 'Grup' },
+  { id: 'session', header: 'Sesi' },
+  { accessorKey: 'code', header: 'Kode' },
+  { id: 'actions', header: '' },
+]
+
 const copied = ref<string | null>(null)
 async function copyLink(code: string) {
   const url = buildGuestLink(window.location.origin, slug.value, code)
@@ -110,77 +125,135 @@ function shareWa(g: any) {
     </template>
     <template #body>
       <div class="space-y-6">
+        <div class="grid grid-cols-3 gap-3">
+          <div class="rounded-lg border border-default bg-elevated/40 p-4">
+            <div class="flex items-center gap-2 text-muted">
+              <UIcon name="i-lucide-users" class="size-4" />
+              <span class="text-xs font-medium uppercase tracking-wide">Tamu</span>
+            </div>
+            <p class="mt-1 text-2xl font-semibold tabular-nums text-highlighted">{{ guests.length }}</p>
+          </div>
+          <div class="rounded-lg border border-default bg-elevated/40 p-4">
+            <div class="flex items-center gap-2 text-muted">
+              <UIcon name="i-lucide-clock" class="size-4" />
+              <span class="text-xs font-medium uppercase tracking-wide">Sesi</span>
+            </div>
+            <p class="mt-1 text-2xl font-semibold tabular-nums text-highlighted">{{ sessions.length }}</p>
+          </div>
+          <div class="rounded-lg border border-default bg-elevated/40 p-4">
+            <div class="flex items-center gap-2 text-muted">
+              <UIcon name="i-lucide-tags" class="size-4" />
+              <span class="text-xs font-medium uppercase tracking-wide">Grup</span>
+            </div>
+            <p class="mt-1 text-2xl font-semibold tabular-nums text-highlighted">{{ groupCount }}</p>
+          </div>
+        </div>
+
         <UCard>
-          <h2 class="mb-3 font-medium">Sesi Waktu</h2>
-          <div v-if="!eventNames.length" class="mb-3 rounded border border-dashed p-3 text-sm text-gray-500">
+          <template #header>
+            <div class="flex items-center gap-2">
+              <UIcon name="i-lucide-clock" class="size-5 text-primary" />
+              <h2 class="font-semibold text-highlighted">Sesi Waktu</h2>
+            </div>
+          </template>
+          <div v-if="!eventNames.length" class="rounded-lg border border-dashed border-default p-4 text-sm text-muted">
             Belum ada acara. Tambah bagian "Detail Acara" di editor dulu untuk membuat sesi.
           </div>
-          <div v-else class="mb-3 flex flex-wrap items-end gap-2">
-            <USelect v-model="sTarget" :items="eventNames" placeholder="Acara" />
-            <UInput v-model="sStart" placeholder="Mulai (mis. 09:00)" />
-            <UInput v-model="sEnd" placeholder="Selesai (mis. 18:00 / Selesai)" />
-            <UButton label="Tambah Sesi" @click="addSession" />
-          </div>
-          <ul class="space-y-1 text-sm">
-            <li v-for="s in sessions" :key="s.id" class="flex items-center gap-2">
-              <span>{{ sessionLabel(s) }}</span>
-              <UButton class="ml-auto" size="xs" color="error" variant="ghost" label="Hapus" @click="delSession(s.id)" />
-            </li>
-          </ul>
+          <template v-else>
+            <div class="mb-4 flex flex-wrap items-end gap-2">
+              <USelect v-model="sTarget" :items="eventNames" placeholder="Acara" />
+              <UInput v-model="sStart" placeholder="Mulai (mis. 09:00)" />
+              <UInput v-model="sEnd" placeholder="Selesai (mis. 18:00 / Selesai)" />
+              <UButton icon="i-lucide-plus" label="Tambah Sesi" @click="addSession" />
+            </div>
+            <div v-if="!sessions.length" class="text-sm text-muted">Belum ada sesi.</div>
+            <div v-else class="flex flex-wrap gap-2">
+              <UBadge v-for="s in sessions" :key="s.id" color="neutral" variant="subtle" size="lg" class="gap-1.5">
+                <UIcon name="i-lucide-clock" class="size-3.5" />
+                {{ sessionLabel(s) }}
+                <button type="button" class="ml-1 text-error transition-opacity hover:opacity-70" @click="delSession(s.id)">
+                  <UIcon name="i-lucide-x" class="size-3.5" />
+                </button>
+              </UBadge>
+            </div>
+          </template>
         </UCard>
 
         <UCard>
-          <h2 class="mb-3 font-medium">Tambah Tamu</h2>
-          <div class="mb-4 flex flex-wrap items-end gap-2">
-            <UInput v-model="gName" placeholder="Nama tamu" />
+          <template #header>
+            <div class="flex items-center gap-2">
+              <UIcon name="i-lucide-user-plus" class="size-5 text-primary" />
+              <h2 class="font-semibold text-highlighted">Tambah Tamu</h2>
+            </div>
+          </template>
+          <div class="mb-5 flex flex-wrap items-end gap-2">
+            <UInput v-model="gName" placeholder="Nama tamu" @keyup.enter="addGuest" />
             <UInput v-model="gGroup" placeholder="Grup (opsional)" />
             <USelect v-model="gSession" :items="sessionOptions" />
-            <UButton label="Tambah" @click="addGuest" />
+            <UButton icon="i-lucide-plus" label="Tambah" @click="addGuest" />
           </div>
-          <div class="flex flex-wrap items-end gap-2">
-            <UTextarea v-model="bulkText" :rows="4" placeholder="Tambah banyak: satu nama per baris" class="min-w-64" />
-            <UInput v-model="bulkGroup" placeholder="Grup (opsional)" />
-            <USelect v-model="bulkSession" :items="sessionOptions" />
-            <UButton label="Tambah Semua" :disabled="!bulkNames.length" @click="addBulk" />
+          <div class="border-t border-default pt-4">
+            <p class="mb-2 text-xs font-medium uppercase tracking-wide text-muted">Tambah Massal</p>
+            <div class="flex flex-wrap items-end gap-2">
+              <UTextarea v-model="bulkText" :rows="4" placeholder="Satu nama per baris" class="min-w-64" />
+              <UInput v-model="bulkGroup" placeholder="Grup (opsional)" />
+              <USelect v-model="bulkSession" :items="sessionOptions" />
+              <UButton icon="i-lucide-list-plus" :label="bulkNames.length ? `Tambah ${bulkNames.length}` : 'Tambah Semua'" :disabled="!bulkNames.length" @click="addBulk" />
+            </div>
           </div>
         </UCard>
 
         <UCard>
-          <h2 class="mb-3 font-medium">Daftar Tamu ({{ guests.length }})</h2>
-          <div v-if="!guests.length" class="text-sm text-gray-500">Belum ada tamu.</div>
-          <table v-else class="w-full text-sm">
-            <thead>
-              <tr class="text-left text-gray-500">
-                <th class="py-1">Nama</th><th>Grup</th><th>Sesi</th><th>Kode</th><th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="g in guests" :key="g.id" class="border-t">
-                <td class="py-1">{{ g.name }}</td>
-                <td>{{ g.groupLabel || '—' }}</td>
-                <td>{{ sessionById(g.sessionId) ? sessionLabel(sessionById(g.sessionId)) : '—' }}</td>
-                <td class="font-mono text-xs">{{ g.code }}</td>
-                <td class="flex justify-end gap-1 py-1">
-                  <UButton size="xs" variant="ghost" :label="copied === g.code ? 'Tersalin' : 'Salin link'" @click="copyLink(g.code)" />
-                  <UButton size="xs" variant="ghost" label="WA" @click="shareWa(g)" />
-                  <UButton size="xs" color="error" variant="ghost" label="Hapus" @click="delGuest(g.id)" />
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <template #header>
+            <div class="flex flex-wrap items-center gap-3">
+              <UIcon name="i-lucide-users" class="size-5 text-primary" />
+              <h2 class="font-semibold text-highlighted">Daftar Tamu</h2>
+              <UBadge color="neutral" variant="subtle" :label="String(guests.length)" />
+              <UInput v-model="search" icon="i-lucide-search" placeholder="Cari nama / grup" size="sm" class="ml-auto w-56" />
+            </div>
+          </template>
+          <UTable :data="filteredGuests" :columns="columns" class="-mx-4 -my-2">
+            <template #name-cell="{ row }">
+              <span class="font-medium text-highlighted">{{ row.original.name }}</span>
+            </template>
+            <template #groupLabel-cell="{ row }">
+              <UBadge v-if="row.original.groupLabel" color="neutral" variant="subtle" :label="row.original.groupLabel" />
+              <span v-else class="text-dimmed">—</span>
+            </template>
+            <template #session-cell="{ row }">
+              <UBadge v-if="sessionById(row.original.sessionId)" color="primary" variant="subtle" :label="sessionLabel(sessionById(row.original.sessionId))" />
+              <span v-else class="text-dimmed">—</span>
+            </template>
+            <template #code-cell="{ row }">
+              <span class="font-mono text-xs text-muted">{{ row.original.code }}</span>
+            </template>
+            <template #actions-cell="{ row }">
+              <div class="flex justify-end gap-1">
+                <UButton size="xs" variant="ghost" :icon="copied === row.original.code ? 'i-lucide-check' : 'i-lucide-link'" :label="copied === row.original.code ? 'Tersalin' : 'Salin'" @click="copyLink(row.original.code)" />
+                <UButton size="xs" variant="ghost" color="success" icon="i-lucide-message-circle" label="WA" @click="shareWa(row.original)" />
+                <UButton size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="delGuest(row.original.id)" />
+              </div>
+            </template>
+            <template #empty>
+              <div class="flex flex-col items-center gap-2 py-8 text-muted">
+                <UIcon name="i-lucide-user-x" class="size-8 text-dimmed" />
+                <span class="text-sm">{{ search ? 'Tidak ada tamu cocok.' : 'Belum ada tamu.' }}</span>
+              </div>
+            </template>
+          </UTable>
         </UCard>
       </div>
 
-        <UModal v-model:open="templateOpen" title="Template Pesan WhatsApp">
-          <template #body>
-            <p class="mb-2 text-xs text-gray-500">Placeholder: {GUEST_NAME} {COUPLE_NAME} {DATE} {TIME} {URL}</p>
-            <UTextarea v-model="templateDraft" :rows="14" class="w-full" />
-            <div class="mt-3 flex justify-end gap-2">
-              <UButton variant="ghost" label="Batal" @click="templateOpen = false" />
-              <UButton label="Simpan" @click="saveTemplate" />
-            </div>
-          </template>
-        </UModal>
+      <UModal v-model:open="templateOpen" title="Template Pesan WhatsApp">
+        <template #body>
+          <p class="mb-2 text-xs text-muted">Placeholder: {GUEST_NAME} {COUPLE_NAME} {DATE} {TIME} {URL}</p>
+          <UTextarea v-model="templateDraft" :rows="14" class="w-full" />
+          <div class="mt-3 flex justify-end gap-2">
+            <UButton variant="ghost" label="Batal" @click="templateOpen = false" />
+            <UButton label="Simpan" @click="saveTemplate" />
+          </div>
+        </template>
+      </UModal>
     </template>
   </UDashboardPanel>
 </template>
