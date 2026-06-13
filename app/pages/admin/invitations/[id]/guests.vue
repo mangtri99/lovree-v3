@@ -34,7 +34,8 @@ const sessions = computed<any[]>(() => (sessionsData.value as any)?.sessions ?? 
 const guests = computed<any[]>(() => (guestsData.value as any)?.guests ?? [])
 const sessionLabel = (s: any) => `${s.targetEvent} ${s.timeStart}${s.timeEnd ? '–' + s.timeEnd : ''}`
 const sessionById = (sid: string | null) => sessions.value.find((s) => s.id === sid)
-const sessionOptions = computed(() => [{ label: '— tanpa sesi —', value: '' }, ...sessions.value.map((s) => ({ label: sessionLabel(s), value: s.id }))])
+const NO_SESSION = 'none' // Nuxt UI USelect items must not use an empty-string value
+const sessionOptions = computed(() => [{ label: '— tanpa sesi —', value: NO_SESSION }, ...sessions.value.map((s) => ({ label: sessionLabel(s), value: s.id }))])
 
 const sTarget = ref('')
 const sStart = ref('')
@@ -52,20 +53,20 @@ async function delSession(sid: string) {
 
 const gName = ref('')
 const gGroup = ref('')
-const gSession = ref<string>('')
+const gSession = ref<string>(NO_SESSION)
 async function addGuest() {
   if (!gName.value.trim()) return
-  await $fetch(`/api/admin/invitations/${id}/guests`, { method: 'POST', body: { names: [gName.value.trim()], groupLabel: gGroup.value || undefined, sessionId: gSession.value || null } })
+  await $fetch(`/api/admin/invitations/${id}/guests`, { method: 'POST', body: { names: [gName.value.trim()], groupLabel: gGroup.value || undefined, sessionId: gSession.value !== NO_SESSION ? gSession.value : null } })
   gName.value = ''
   await refreshGuests()
 }
 const bulkText = ref('')
 const bulkGroup = ref('')
-const bulkSession = ref<string>('')
+const bulkSession = ref<string>(NO_SESSION)
 const bulkNames = computed(() => bulkText.value.split('\n').map((s) => s.trim()).filter(Boolean))
 async function addBulk() {
   if (!bulkNames.value.length) return
-  await $fetch(`/api/admin/invitations/${id}/guests`, { method: 'POST', body: { names: bulkNames.value, groupLabel: bulkGroup.value || undefined, sessionId: bulkSession.value || null } })
+  await $fetch(`/api/admin/invitations/${id}/guests`, { method: 'POST', body: { names: bulkNames.value, groupLabel: bulkGroup.value || undefined, sessionId: bulkSession.value !== NO_SESSION ? bulkSession.value : null } })
   bulkText.value = ''
   await refreshGuests()
 }
