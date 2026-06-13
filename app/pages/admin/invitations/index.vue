@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, watchEffect } from 'vue'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 
 const { data: list } = await useFetch('/api/admin/invitations')
+const { data: themes } = await useFetch<any>('/api/admin/themes')
+const themeId = ref<string>('')
+const themeItems = computed(() => ((themes.value as any[]) ?? []).map((t) => ({ label: t.name, value: t.id })))
+watchEffect(() => { if (!themeId.value && (themes.value as any[])?.length) themeId.value = (themes.value as any[])[0].id })
 const title = ref('')
 const type = ref<'wedding' | 'metatah' | 'wedding_metatah' | 'baby_3mo' | 'birthday'>('wedding')
 const typeItems = [
@@ -19,7 +23,7 @@ async function create() {
   error.value = ''
   creating.value = true
   try {
-    const inv = await $fetch<{ id: string }>('/api/admin/invitations', { method: 'POST', body: { title: title.value, type: type.value } })
+    const inv = await $fetch<{ id: string }>('/api/admin/invitations', { method: 'POST', body: { title: title.value, type: type.value, themeId: themeId.value || undefined } })
     await navigateTo(`/admin/invitations/${inv.id}/edit`)
   } catch (e: any) { error.value = e?.data?.message ?? 'Gagal' } finally { creating.value = false }
 }
@@ -38,6 +42,9 @@ async function create() {
           </UFormField>
           <UFormField label="Tipe">
             <USelect v-model="type" :items="typeItems" />
+          </UFormField>
+          <UFormField label="Tema">
+            <USelect v-model="themeId" :items="themeItems" />
           </UFormField>
           <UButton type="submit" label="Buat" :loading="creating" />
         </form>
