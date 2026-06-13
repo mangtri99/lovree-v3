@@ -5,14 +5,17 @@ import MusicPlayer from './MusicPlayer.vue'
 import SectionRenderer from './SectionRenderer.vue'
 
 const props = defineProps<{
-  data: { cssVars: Record<string, string>; musicUrl: string | null; sections: Array<{ type: string; content: any }>; guestbook?: Array<{ name: string; message: string; attendance: string | null }> }
+  data: { slug?: string; cssVars: Record<string, string>; musicUrl: string | null; sections: Array<{ type: string; content: any }>; guestbook?: Array<{ name: string; message: string; attendance: string | null }> }
   guestName: string
+  guestCode?: string
 }>()
 
 const opened = ref(false)
 const guestbook = ref(props.data.guestbook ?? [])
 provide('guestbook', guestbook)
 provide('guestName', props.guestName)
+provide('slug', props.data.slug ?? '')
+provide('guestCode', props.guestCode ?? '')
 
 const styleStr = computed(() => {
   const vars = Object.entries(props.data.cssVars).map(([k, v]) => `${k}: ${v}`).join('; ')
