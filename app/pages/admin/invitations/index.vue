@@ -59,6 +59,7 @@ async function create() {
               label="View" />
             <UButton :class="inv.status === 'published' ? '' : 'ml-auto'" variant="link" :to="`/admin/invitations/${inv.id}/edit`" label="Edit" />
             <UButton variant="link" :to="`/admin/invitations/${inv.id}/guests`" label="Tamu" />
+            <UButton variant="link" :to="`/admin/invitations/${inv.id}/rsvp`" label="RSVP" />
           </div>
         </UCard>
       </div>

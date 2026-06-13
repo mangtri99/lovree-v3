@@ -65,6 +65,7 @@ async function publish() {
       <UDashboardNavbar title="Editor">
         <template #right>
           <UButton variant="link" :to="`/admin/invitations/${id}/guests`" label="Tamu" />
+          <UButton variant="link" :to="`/admin/invitations/${id}/rsvp`" label="RSVP" />
           <SaveStatus :state="saveState" />
           <UButton label="Publish" :loading="publishing" @click="publish" />
         </template>
