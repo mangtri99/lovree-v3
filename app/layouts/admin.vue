@@ -1,22 +1,30 @@
 <script setup lang="ts">
-const { user, clear } = useUserSession()
+import type { NavigationMenuItem } from "@nuxt/ui";
 
-const links = [[
-  { label: 'Dashboard', icon: 'i-lucide-layout-dashboard', to: '/admin' },
-  { label: 'Undangan', icon: 'i-lucide-mail', to: '/admin/invitations' },
-]]
+const route = useRoute();
+const toast = useToast();
+
+const open = ref(false);
+
+const { user, clear } = useUserSession();
+
+const links = [
+  [
+    { label: "Dashboard", icon: "i-lucide-layout-dashboard", to: "/admin" },
+    { label: "Undangan", icon: "i-lucide-mail", to: "/admin/invitations" },
+  ],
+];
 
 async function logout() {
-  await $fetch('/api/auth/logout', { method: 'POST' })
-  await clear()
-  await navigateTo('/login')
+  await $fetch("/api/auth/logout", { method: "POST" });
+  await clear();
+  await navigateTo("/login");
 }
 
-const userItems = computed(() => [[
-  { label: user.value?.email ?? 'Akun', type: 'label' as const },
-], [
-  { label: 'Keluar', icon: 'i-lucide-log-out', onSelect: () => logout() },
-]])
+const userItems = computed(() => [
+  [{ label: user.value?.email ?? "Akun", type: "label" as const }],
+  [{ label: "Keluar", icon: "i-lucide-log-out", onSelect: () => logout() }],
+]);
 </script>
 
 <template>
@@ -31,7 +39,14 @@ const userItems = computed(() => [[
       <template #footer>
         <div class="flex w-full items-center gap-2">
           <UDropdownMenu :items="userItems" class="flex-1">
-            <UButton :label="user?.name || user?.email || 'Akun'" icon="i-lucide-user" color="neutral" variant="ghost" block class="justify-start" />
+            <UButton
+              :label="user?.name || user?.email || 'Akun'"
+              icon="i-lucide-user"
+              color="neutral"
+              variant="ghost"
+              block
+              class="justify-start"
+            />
           </UDropdownMenu>
           <UColorModeButton />
         </div>
