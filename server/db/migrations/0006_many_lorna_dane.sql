@@ -1,0 +1,1 @@
+ALTER TABLE "themes" ADD COLUMN "key" text DEFAULT 'base' NOT NULL;

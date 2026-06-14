@@ -22,6 +22,7 @@ export const musicTracks = pgTable('music_tracks', {
 export const themes = pgTable('themes', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
+  key: text('key').notNull().default('base'),
   tokens: jsonb('tokens').notNull(),
   previewImage: text('preview_image'),
 })
