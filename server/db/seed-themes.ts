@@ -11,7 +11,7 @@ async function main() {
   for (const t of CURATED_THEMES) {
     const [existing] = await db.select({ id: themes.id }).from(themes).where(eq(themes.name, t.name)).limit(1)
     if (existing) { console.log(`skip (exists): ${t.name}`); continue }
-    await db.insert(themes).values({ name: t.name, tokens: t.tokens, previewImage: null })
+    await db.insert(themes).values({ name: t.name, key: t.key ?? 'base', tokens: t.tokens, previewImage: null })
     console.log(`added: ${t.name}`)
   }
   process.exit(0)
