@@ -1,6 +1,6 @@
-import { eq, and } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { useDb } from '../db'
-import { invitations, themes, media } from '../db/schema'
+import { invitations, themes, musicTracks } from '../db/schema'
 import { validateContent, SECTION_TYPES, type SectionType } from '../registry/sections'
 import { resolveTokens, tokensToCssVars } from '../theme/tokens'
 
@@ -31,9 +31,9 @@ export async function loadInvitationBySlug(slug: string): Promise<LoadedInvitati
   const assembled = assembleInvitation(inv, themeRows[0], doc.sections ?? [])
 
   let musicUrl: string | null = null
-  if (inv.musicMediaId) {
-    const mediaRows = await db.select().from(media).where(and(eq(media.id, inv.musicMediaId), eq(media.type, 'audio'))).limit(1)
-    musicUrl = mediaRows[0]?.url || null
+  if (inv.musicTrackId) {
+    const trackRows = await db.select({ url: musicTracks.url }).from(musicTracks).where(eq(musicTracks.id, inv.musicTrackId)).limit(1)
+    musicUrl = trackRows[0]?.url || null
   }
   return { ...assembled, ownerId: inv.ownerId, musicUrl, publishedAt: inv.publishedAt ?? null }
 }
