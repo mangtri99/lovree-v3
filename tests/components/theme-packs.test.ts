@@ -8,8 +8,8 @@ describe('resolveSectionComponent', () => {
   it('returns the theme pack component when the theme overrides the section', () => {
     expect(resolveSectionComponent('elegant', 'hero')).toBe(ElegantHero)
   })
-  it('falls back to the base component for a non-overridden section', () => {
-    expect(resolveSectionComponent('elegant', 'footer')).toBe(FooterSection)
+  it('falls back to the base component for an unknown theme key', () => {
+    expect(resolveSectionComponent('nope', 'footer')).toBe(FooterSection)
   })
   it('uses base for the base theme', () => {
     expect(resolveSectionComponent('base', 'hero')).toBe(HeroSection)
