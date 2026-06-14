@@ -1,0 +1,20 @@
+import { describe, it, expect } from 'vitest'
+import { resolveSectionComponent } from '../../app/components/invitation/themePacks'
+import HeroSection from '../../app/components/invitation/sections/HeroSection.vue'
+import FooterSection from '../../app/components/invitation/sections/FooterSection.vue'
+import ElegantHero from '../../app/components/invitation/themes/elegant/HeroSection.vue'
+
+describe('resolveSectionComponent', () => {
+  it('returns the theme pack component when the theme overrides the section', () => {
+    expect(resolveSectionComponent('elegant', 'hero')).toBe(ElegantHero)
+  })
+  it('falls back to the base component for a non-overridden section', () => {
+    expect(resolveSectionComponent('elegant', 'footer')).toBe(FooterSection)
+  })
+  it('uses base for the base theme', () => {
+    expect(resolveSectionComponent('base', 'hero')).toBe(HeroSection)
+  })
+  it('returns null for an unknown section type', () => {
+    expect(resolveSectionComponent('elegant', 'nope')).toBe(null)
+  })
+})
