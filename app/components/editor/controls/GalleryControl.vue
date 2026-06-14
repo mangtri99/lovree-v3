@@ -13,7 +13,9 @@ function move(i: number, dir: -1 | 1) {
   const j = i + dir
   if (j < 0 || j >= props.modelValue.length) return
   const a = [...props.modelValue]
-  ;[a[i], a[j]] = [a[j], a[i]]
+  const tmp = a[i]!
+  a[i] = a[j]!
+  a[j] = tmp
   update(a)
 }
 async function onFiles(e: Event) {
