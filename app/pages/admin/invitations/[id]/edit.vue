@@ -23,6 +23,11 @@ if (!data.value) throw createError({ statusCode: 404, statusMessage: 'Tidak dite
 const editor = createEditorState((data.value as any).draftDocument ?? { sections: [] })
 const device = ref<'mobile' | 'desktop'>('mobile')
 const showCover = ref(false)
+const tab = ref('konten')
+const tabItems = [
+  { label: 'Konten', value: 'konten', icon: 'i-lucide-layout-list', slot: 'konten' as const },
+  { label: 'Tampilan', value: 'tampilan', icon: 'i-lucide-palette', slot: 'tampilan' as const },
+]
 const saveState = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
 const themeTokens = ref<Record<string, any>>(((data.value as any).themeTokens ?? {}) as Record<string, any>)
 const themeId = ref<string>((data.value as any).themeId ?? '')
@@ -77,36 +82,54 @@ async function publish() {
     <template #header>
       <UDashboardNavbar title="Editor">
         <template #right>
-          <UButton variant="link" :to="`/admin/invitations/${id}/guests`" label="Tamu" />
-          <UButton variant="link" :to="`/admin/invitations/${id}/rsvp`" label="RSVP" />
+          <UButton variant="ghost" color="neutral" icon="i-lucide-users" :to="`/admin/invitations/${id}/guests`" label="Tamu" />
+          <UButton variant="ghost" color="neutral" icon="i-lucide-clipboard-list" :to="`/admin/invitations/${id}/rsvp`" label="RSVP" />
+          <USeparator orientation="vertical" class="h-5" />
           <SaveStatus :state="saveState" />
-          <UButton label="Publish" :loading="publishing" @click="publish" />
+          <UButton icon="i-lucide-rocket" label="Publish" :loading="publishing" @click="publish" />
         </template>
       </UDashboardNavbar>
     </template>
     <template #body>
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div class="space-y-4">
-          <InvitationSettings :tracks="tracks" :music-track-id="musicTrackId" :on-set-music="setMusic" @update:music-url="musicUrl = $event" />
-          <UFormField label="Tema" class="mb-3">
-            <USelect v-model="themeId" :items="themeItems" class="w-full" />
-          </UFormField>
-          <DesignControls v-model="overrides" :theme-tokens="themeTokens" />
-          <SectionList
-            :sections="editor.doc.sections"
-            @add="editor.addSection"
-            @remove="editor.remove"
-            @toggle="editor.toggle"
-            @move="(p) => editor.move(p.from, p.to)"
-            @set-field="(p) => editor.setField(p.id, p.key, p.value)" />
+        <div>
+          <UTabs v-model="tab" :items="tabItems" variant="link" class="w-full">
+            <template #konten>
+              <div class="pt-4">
+                <SectionList
+                  :sections="editor.doc.sections"
+                  @add="editor.addSection"
+                  @remove="editor.remove"
+                  @toggle="editor.toggle"
+                  @move="(p) => editor.move(p.from, p.to)"
+                  @set-field="(p) => editor.setField(p.id, p.key, p.value)" />
+              </div>
+            </template>
+            <template #tampilan>
+              <div class="space-y-4 pt-4">
+                <InvitationSettings :tracks="tracks" :music-track-id="musicTrackId" :on-set-music="setMusic" @update:music-url="musicUrl = $event" />
+                <div class="rounded border border-default bg-default p-3">
+                  <UFormField label="Tema">
+                    <USelect v-model="themeId" :items="themeItems" class="w-full" />
+                  </UFormField>
+                </div>
+                <DesignControls v-model="overrides" :theme-tokens="themeTokens" />
+              </div>
+            </template>
+          </UTabs>
         </div>
         <div class="flex flex-col md:sticky md:top-4 md:max-h-[calc(100vh-7rem)]">
-          <div class="mb-2 flex shrink-0 gap-2">
-            <UButton size="xs" :variant="device === 'mobile' ? 'solid' : 'outline'" label="Mobile" @click="device = 'mobile'" />
-            <UButton size="xs" :variant="device === 'desktop' ? 'solid' : 'outline'" label="Desktop" @click="device = 'desktop'" />
-            <UButton size="xs" :variant="showCover ? 'solid' : 'outline'" :label="showCover ? 'Lihat Isi' : 'Lihat Cover'" @click="showCover = !showCover" />
+          <div class="mb-2 flex shrink-0 items-center gap-2">
+            <UButtonGroup size="xs">
+              <UButton :variant="device === 'mobile' ? 'solid' : 'outline'" color="neutral" icon="i-lucide-smartphone" label="Mobile" @click="device = 'mobile'" />
+              <UButton :variant="device === 'desktop' ? 'solid' : 'outline'" color="neutral" icon="i-lucide-monitor" label="Desktop" @click="device = 'desktop'" />
+            </UButtonGroup>
+            <span class="text-xs tabular-nums text-dimmed">{{ device === 'mobile' ? '390px' : 'Penuh' }}</span>
+            <UButton class="ml-auto" size="xs" :variant="showCover ? 'solid' : 'soft'" color="primary" :icon="showCover ? 'i-lucide-eye' : 'i-lucide-image'" :label="showCover ? 'Lihat Isi' : 'Lihat Cover'" @click="showCover = !showCover" />
           </div>
-          <EditorPreview class="min-h-0 flex-1" :sections="editor.doc.sections" :css-vars="cssVars" :device="device" :show-cover="showCover" :music-url="musicUrl" @open="showCover = false" />
+          <div class="min-h-0 flex-1 overflow-hidden rounded-xl border border-default bg-muted/40 p-3">
+            <EditorPreview class="h-full" :sections="editor.doc.sections" :css-vars="cssVars" :device="device" :show-cover="showCover" :music-url="musicUrl" @open="showCover = false" />
+          </div>
         </div>
       </div>
     </template>
