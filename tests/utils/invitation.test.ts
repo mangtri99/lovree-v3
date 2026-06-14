@@ -22,3 +22,16 @@ describe('assembleInvitation', () => {
     expect(out.cssVars['--color-primary']).toBe('#111')
   })
 })
+
+describe('assembleInvitation themeKey', () => {
+  const inv = { id: 'i1', slug: 's', type: 'wedding', status: 'published', ownerId: 'o', tokenOverrides: {} }
+
+  it('uses the theme key', () => {
+    expect(assembleInvitation(inv as any, { tokens: {}, key: 'elegant' }, []).themeKey).toBe('elegant')
+  })
+
+  it('defaults to base when theme/key absent', () => {
+    expect(assembleInvitation(inv as any, undefined, []).themeKey).toBe('base')
+    expect(assembleInvitation(inv as any, { tokens: {} }, []).themeKey).toBe('base')
+  })
+})

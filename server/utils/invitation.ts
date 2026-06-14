@@ -9,6 +9,7 @@ export interface AssembledInvitation {
   id: string; slug: string; type: string; status: string; ownerId?: string
   cssVars: Record<string, string>
   sections: AssembledSection[]
+  themeKey: string
 }
 export type LoadedInvitation = AssembledInvitation & { musicUrl: string | null; publishedAt: Date | null }
 
@@ -18,7 +19,7 @@ export function assembleInvitation(inv: any, theme: any, sections: any[]): Assem
     .filter((s) => SECTION_TYPES.includes(s.type as SectionType))
     .map((s) => ({ type: s.type as SectionType, content: validateContent(s.type as SectionType, s.content) }))
   const cssVars = tokensToCssVars(resolveTokens(theme?.tokens ?? {}, inv.tokenOverrides ?? {}))
-  return { id: inv.id, slug: inv.slug, type: inv.type, status: inv.status, ownerId: inv.ownerId, cssVars, sections: ordered }
+  return { id: inv.id, slug: inv.slug, type: inv.type, status: inv.status, ownerId: inv.ownerId, cssVars, sections: ordered, themeKey: theme?.key ?? 'base' }
 }
 
 export async function loadInvitationBySlug(slug: string): Promise<LoadedInvitation | null> {
