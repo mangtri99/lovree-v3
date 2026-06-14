@@ -1,10 +1,10 @@
 <script setup lang="ts">
 defineOptions({ name: 'SectionRenderer' })
 import { computed } from 'vue'
-import { sectionComponents } from './sectionComponents'
+import { resolveSectionComponent } from './themePacks'
 
-const props = defineProps<{ section: { type: string; content: any } }>()
-const resolved = computed(() => sectionComponents[props.section.type] ?? null)
+const props = defineProps<{ section: { type: string; content: any }; themeKey?: string }>()
+const resolved = computed(() => resolveSectionComponent(props.themeKey ?? 'base', props.section.type))
 </script>
 
 <template>

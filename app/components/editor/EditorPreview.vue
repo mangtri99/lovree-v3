@@ -10,6 +10,7 @@ const props = defineProps<{
   device: 'mobile' | 'desktop'
   showCover: boolean
   musicUrl?: string | null
+  themeKey?: string
 }>()
 const emit = defineEmits<{ open: [] }>()
 
@@ -29,7 +30,7 @@ const hero = computed(() => props.sections.find((s) => s.type === 'hero')?.conte
   <div class="invitation h-full overflow-hidden" :style="rootStyle">
     <div data-preview-frame class="mx-auto h-full border bg-white" :style="frameStyle">
       <CoverModal v-if="showCover" :title="hero.title" :couple-name="hero.coupleName" guest-name="Tamu Undangan" @open="emit('open')" />
-      <SectionRenderer v-for="s in visible" :key="s.id" :section="s" />
+      <SectionRenderer v-for="s in visible" :key="s.id" :section="s" :theme-key="themeKey ?? 'base'" />
       <MusicPlayer v-if="showCover && musicUrl" :src="musicUrl" :playing="showCover" />
     </div>
   </div>
