@@ -43,8 +43,12 @@ async function switchTheme(newId: string) {
 }
 watch(themeId, (v) => { if (v) switchTheme(v) })
 const musicUrl = ref<string | null>((data.value as any).musicUrl ?? null)
-async function setMusic(mediaId: string | null) {
-  await $fetch(`/api/admin/invitations/${id}/music`, { method: 'PATCH', body: { musicMediaId: mediaId } })
+const { data: tracksData } = await useFetch<any>('/api/admin/music')
+const tracks = computed(() => ((tracksData.value as any)?.tracks ?? []))
+const musicTrackId = ref<string | null>((data.value as any).musicTrackId ?? null)
+async function setMusic(trackId: string | null) {
+  musicTrackId.value = trackId
+  await $fetch(`/api/admin/invitations/${id}/music`, { method: 'PATCH', body: { musicTrackId: trackId } })
 }
 
 async function save() {
@@ -83,7 +87,7 @@ async function publish() {
     <template #body>
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div class="space-y-4">
-          <InvitationSettings v-model:music-url="musicUrl" :on-set-music="setMusic" />
+          <InvitationSettings :tracks="tracks" :music-track-id="musicTrackId" :on-set-music="setMusic" @update:music-url="musicUrl = $event" />
           <UFormField label="Tema" class="mb-3">
             <USelect v-model="themeId" :items="themeItems" class="w-full" />
           </UFormField>
