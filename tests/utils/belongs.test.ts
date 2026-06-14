@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { rowBelongsToInvitation } from '../../server/utils/belongs'
+import { rowBelongsToInvitation, rowBelongsToOwner } from '../../server/utils/belongs'
 
 describe('rowBelongsToInvitation', () => {
   it('true when the row belongs to the invitation', () => {
@@ -10,5 +10,17 @@ describe('rowBelongsToInvitation', () => {
   })
   it('false for a missing row', () => {
     expect(rowBelongsToInvitation(null, 'inv1')).toBe(false)
+  })
+})
+
+describe('rowBelongsToOwner', () => {
+  it('true when the row is owned by the user', () => {
+    expect(rowBelongsToOwner({ ownerId: 'u1' }, 'u1')).toBe(true)
+  })
+  it('false for another owner', () => {
+    expect(rowBelongsToOwner({ ownerId: 'u2' }, 'u1')).toBe(false)
+  })
+  it('false for a missing row', () => {
+    expect(rowBelongsToOwner(null, 'u1')).toBe(false)
   })
 })
