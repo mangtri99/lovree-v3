@@ -2,7 +2,7 @@ import 'dotenv/config'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { useDb } from './index'
-import { users, themes, invitations, guests, media } from './schema'
+import { users, themes, invitations, guests, musicTracks } from './schema'
 import { hashUserPassword } from '../utils/password'
 import { SECTION_TYPES, defaultContent } from '../registry/sections'
 import { CURATED_THEMES } from '../theme/curated-themes'
@@ -36,11 +36,11 @@ async function main() {
     draftDocument: doc, publishedDocument: doc, publishedAt: new Date(),
   }).returning()
 
-  const [song] = await db.insert(media).values({
-    invitationId: inv!.id, type: 'audio', r2Key: 'audio/demo.mp3',
-    url: 'https://media.lovree.com/audio/demo.mp3', meta: {},
+  const [song] = await db.insert(musicTracks).values({
+    ownerId: owner!.id, name: 'Lagu Demo', r2Key: 'music/demo.mp3',
+    url: 'https://media.lovree.com/audio/demo.mp3',
   }).returning()
-  await db.update(invitations).set({ musicMediaId: song!.id }).where(eq(invitations.id, inv!.id))
+  await db.update(invitations).set({ musicTrackId: song!.id }).where(eq(invitations.id, inv!.id))
 
   await db.insert(guests).values({ invitationId: inv!.id, name: 'Budi Santoso', code: 'budi' })
   console.log('Seeded invitation: /u/demo-wedding')
