@@ -6,11 +6,15 @@ import ElegantClosing from './themes/elegant/ClosingSection.vue'
 import ElegantQuote from './themes/elegant/QuoteSection.vue'
 import ElegantCustom from './themes/elegant/CustomSection.vue'
 import ElegantFooter from './themes/elegant/FooterSection.vue'
+import ElegantEvent from './themes/elegant/EventSection.vue'
+import ElegantLoveGift from './themes/elegant/LoveGiftSection.vue'
+import ElegantInfo from './themes/elegant/InfoSection.vue'
+import ElegantCountdown from './themes/elegant/CountdownSection.vue'
 
 // themeKey -> (sectionType -> component). A theme overrides only the sections that
 // differ; everything else falls back to the shared `base` pack.
 const packs: Record<string, Record<string, any>> = {
-  elegant: { hero: ElegantHero, couple: ElegantCouple, opening: ElegantOpening, closing: ElegantClosing, quote: ElegantQuote, custom: ElegantCustom, footer: ElegantFooter },
+  elegant: { hero: ElegantHero, couple: ElegantCouple, opening: ElegantOpening, closing: ElegantClosing, quote: ElegantQuote, custom: ElegantCustom, footer: ElegantFooter, event: ElegantEvent, love_gift: ElegantLoveGift, info: ElegantInfo, countdown: ElegantCountdown },
 }
 
 export function resolveSectionComponent(themeKey: string, type: string): any | null {
