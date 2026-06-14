@@ -22,6 +22,13 @@ export const galleryItems = z
   .transform((a) => a.filter(Boolean))
   .default([])
 
+// Photos-only gallery: flat {mediaId, url} items
+export const galleryImage = z.object({ mediaId: z.string().default(''), url: z.string().default('') })
+export const galleryImages = z
+  .array(galleryImage.catch(undefined as any))
+  .transform((a) => a.filter(Boolean))
+  .default([])
+
 // id -> zod primitive, used to describe generic field kinds in the registry/editor
 export const fieldTypes = {
   text: z.string(),
@@ -31,6 +38,7 @@ export const fieldTypes = {
   list: z.array(z.unknown()),
   url: z.string().url(),
   youtube: youtubeId,
+  gallery: z.array(z.object({ mediaId: z.string().default(''), url: z.string().default('') })),
 } as const
 
 export type FieldTypeId = keyof typeof fieldTypes
