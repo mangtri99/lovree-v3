@@ -12,6 +12,7 @@ const links = [
   [
     { label: "Dashboard", icon: "i-lucide-layout-dashboard", to: "/admin" },
     { label: "Undangan", icon: "i-lucide-mail", to: "/admin/invitations" },
+    { label: 'Musik', icon: 'i-lucide-music', to: '/admin/music' },
   ],
 ] satisfies NavigationMenuItem[][];
 

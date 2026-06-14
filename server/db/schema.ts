@@ -10,6 +10,15 @@ export const users = pgTable('users', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 })
 
+export const musicTracks = pgTable('music_tracks', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  ownerId: uuid('owner_id').notNull().references(() => users.id),
+  name: text('name').notNull(),
+  r2Key: text('r2_key').notNull(),
+  url: text('url').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+})
+
 export const themes = pgTable('themes', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
@@ -25,7 +34,7 @@ export const invitations = pgTable('invitations', {
   themeId: uuid('theme_id').notNull().references(() => themes.id),
   tokenOverrides: jsonb('token_overrides').notNull().default({}),
   status: text('status').notNull().default('draft'),
-  musicMediaId: uuid('music_media_id'),
+  musicTrackId: uuid('music_track_id').references(() => musicTracks.id),
   waTemplate: text('wa_template').notNull().default(''),
   draftDocument: jsonb('draft_document').notNull().default({ sections: [] }),
   publishedDocument: jsonb('published_document'),

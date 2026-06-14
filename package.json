@@ -11,7 +11,9 @@
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "tsx server/db/seed.ts"
+    "db:seed": "tsx server/db/seed.ts",
+    "db:seed:themes": "tsx server/db/seed-themes.ts",
+    "db:reset": "tsx server/db/reset.ts && drizzle-kit migrate && tsx server/db/seed.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1066.0",

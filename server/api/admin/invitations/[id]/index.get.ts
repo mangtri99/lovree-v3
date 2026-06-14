@@ -1,6 +1,6 @@
-import { eq, and } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { useDb } from '../../../../db'
-import { invitations, themes, media } from '../../../../db/schema'
+import { invitations, themes, musicTracks } from '../../../../db/schema'
 import { assertOwnerOr404 } from '../../../../utils/ownership'
 import { resolveTokens, tokensToCssVars } from '../../../../theme/tokens'
 
@@ -13,10 +13,9 @@ export default defineEventHandler(async (event) => {
   const [theme] = await db.select().from(themes).where(eq(themes.id, inv!.themeId)).limit(1)
   const cssVars = tokensToCssVars(resolveTokens((theme?.tokens as any) ?? {}, (inv!.tokenOverrides as any) ?? {}))
   let musicUrl: string | null = null
-  if (inv!.musicMediaId) {
-    const [m] = await db.select({ url: media.url }).from(media)
-      .where(and(eq(media.id, inv!.musicMediaId), eq(media.type, 'audio'))).limit(1)
-    musicUrl = m?.url ?? null
+  if (inv!.musicTrackId) {
+    const [t] = await db.select({ url: musicTracks.url }).from(musicTracks).where(eq(musicTracks.id, inv!.musicTrackId)).limit(1)
+    musicUrl = t?.url ?? null
   }
   return {
     id: inv!.id, slug: inv!.slug, type: inv!.type, status: inv!.status,
@@ -24,7 +23,7 @@ export default defineEventHandler(async (event) => {
     publishedAt: inv!.publishedAt, cssVars,
     themeTokens: (theme?.tokens as any) ?? {},
     tokenOverrides: (inv!.tokenOverrides as any) ?? {},
-    musicMediaId: inv!.musicMediaId, musicUrl,
+    musicTrackId: inv!.musicTrackId, musicUrl,
     waTemplate: inv!.waTemplate,
   }
 })

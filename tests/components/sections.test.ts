@@ -10,12 +10,11 @@ describe('section components', () => {
     expect(w.text()).toContain('The Wedding Of')
     expect(w.text()).toContain('Willy & Debby')
   })
-  it('Gallery renders a YouTube item via embed', () => {
+  it('Gallery renders a photo via <img>', () => {
     const w = mount(GallerySection, {
-      props: { content: { items: [{ type: 'youtube', videoId: 'dQw4w9WgXcQ' }] } },
-      global: { stubs: { YouTubeEmbed: { props: ['videoId'], template: '<div class="yt">{{ videoId }}</div>' }, NuxtImg: true } },
+      props: { content: { items: [{ mediaId: 'm1', url: 'https://cdn/x.jpg' }] } },
     })
-    expect(w.find('.yt').text()).toBe('dQw4w9WgXcQ')
+    expect(w.find('img').attributes('src')).toBe('https://cdn/x.jpg')
   })
   it('LoveGift renders bank accounts', () => {
     const w = mount(LoveGiftSection, { props: { content: { note: 'Tanpa mengurangi rasa hormat', banks: [{ bank: 'BCA', number: '123', holder: 'Willy' }] } } })

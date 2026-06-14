@@ -20,11 +20,6 @@ describe('section registry', () => {
     expect(out.targetDate).toBe('') // invalid -> default
   })
 
-  it('parses gallery youtube items', () => {
-    const out = validateContent('gallery', { items: [{ type: 'youtube', videoId: 'dQw4w9WgXcQ' }] })
-    expect(out.items[0]).toEqual({ type: 'youtube', videoId: 'dQw4w9WgXcQ' })
-  })
-
   it('rejects a javascript: url in event mapsUrl (falls back to defaults)', () => {
     const out = validateContent('event', { events: [{ name: 'A', mapsUrl: 'javascript:alert(1)' }] })
     // invalid url makes the blob fail validation -> full defaults (empty events)
@@ -32,33 +27,32 @@ describe('section registry', () => {
   })
 })
 
-describe('gallery resilient validation', () => {
-  it('drops malformed items but keeps the rest (section not reset)', () => {
-    const out = validateContent('gallery', {
-      items: [
-        { type: 'image', image: { mediaId: 'm1', url: 'https://cdn/x.jpg' } },
-        {},
-        { type: 'youtube', videoId: 'dQw4w9WgXcQ' },
-        { type: 'bogus' },
-      ],
-    })
+describe('gallery (images only)', () => {
+  it('defaults to no items', () => {
+    expect(validateContent('gallery', {})).toEqual({ items: [] })
+  })
+  it('coerces items to {mediaId,url}, drops non-object items, never resets', () => {
+    const out = validateContent('gallery', { items: [
+      { mediaId: 'm1', url: 'https://cdn/x.jpg' },
+      {},
+      { type: 'youtube', videoId: 'abc' },
+      'bogus',
+    ] })
     expect(out.items).toEqual([
-      { type: 'image', image: { mediaId: 'm1', url: 'https://cdn/x.jpg' } },
-      { type: 'youtube', videoId: 'dQw4w9WgXcQ' },
+      { mediaId: 'm1', url: 'https://cdn/x.jpg' },
+      { mediaId: '', url: '' },
+      { mediaId: '', url: '' },
     ])
   })
-  it('keeps an image item with empty image (just added, not yet uploaded)', () => {
-    const out = validateContent('gallery', { items: [{ type: 'image', image: { mediaId: '', url: '' } }] })
-    expect(out.items).toEqual([{ type: 'image', image: { mediaId: '', url: '' } }])
+})
+
+describe('video section', () => {
+  it('defaults to empty videos', () => {
+    expect(validateContent('video', {})).toEqual({ videos: [] })
   })
-  it('keeps a youtube item with a partial id instead of dropping it', () => {
-    const out = validateContent('gallery', { items: [{ type: 'youtube', videoId: 'abc' }] })
-    expect(out.items).toEqual([{ type: 'youtube', videoId: 'abc' }])
-  })
-  it('keeps the object the image control writes after an upload (regression: editor->schema roundtrip)', () => {
-    // ImageControl emits { mediaId, url }; ListControl stores it under the `image` field key.
-    const out = validateContent('gallery', { items: [{ type: 'image', image: { mediaId: 'abc', url: 'https://cdn/up.jpg' } }] })
-    expect(out.items).toEqual([{ type: 'image', image: { mediaId: 'abc', url: 'https://cdn/up.jpg' } }])
+  it('preserves videoId rows and defaults a blank one', () => {
+    expect(validateContent('video', { videos: [{ videoId: 'dQw4w9WgXcQ' }, {}] }))
+      .toEqual({ videos: [{ videoId: 'dQw4w9WgXcQ' }, { videoId: '' }] })
   })
 })
 

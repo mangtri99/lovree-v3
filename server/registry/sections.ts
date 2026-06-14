@@ -1,7 +1,7 @@
 import { z } from 'zod'
-import { galleryItems } from './field-types'
+import { galleryImages } from './field-types'
 
-export type FieldType = 'text' | 'longtext' | 'date' | 'url' | 'youtube' | 'image' | 'list'
+export type FieldType = 'text' | 'longtext' | 'date' | 'url' | 'youtube' | 'image' | 'list' | 'gallery'
 export interface FieldDescriptor {
   type: FieldType
   label: string
@@ -51,7 +51,9 @@ const loveGiftSchema = z.object({
   note: z.string().default(''),
   banks: z.array(bankSchema).default([]),
 })
-const gallerySchema = z.object({ items: galleryItems })
+const gallerySchema = z.object({ items: galleryImages })
+const videoItem = z.object({ videoId: z.string().default('') })
+const videoSchema = z.object({ videos: z.array(videoItem).default([]) })
 const closingSchema = z.object({ body: z.string().default('') })
 const socialLinkSchema = z.object({ label: z.string().default(''), url: safeUrl })
 const infoSchema = z.object({
@@ -159,15 +161,18 @@ export const sectionRegistry = {
     schema: gallerySchema,
     label: 'Galeri',
     fields: {
-      items: {
+      items: { type: 'gallery' as const, label: 'Foto' },
+    },
+  },
+  video: {
+    schema: videoSchema,
+    label: 'Video',
+    fields: {
+      videos: {
         type: 'list' as const,
-        label: 'Galeri',
-        defaultItem: { type: 'image', image: { mediaId: '', url: '' } },
-        itemFields: {
-          type: { type: 'text' as const, label: 'Tipe (image/youtube)' },
-          image: { type: 'image' as const, label: 'Gambar' },
-          videoId: { type: 'youtube' as const, label: 'YouTube ID' },
-        },
+        label: 'Video',
+        defaultItem: { videoId: '' },
+        itemFields: { videoId: { type: 'youtube' as const, label: 'YouTube ID' } },
       },
     },
   },

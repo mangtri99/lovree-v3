@@ -1,11 +1,11 @@
 import { z } from 'zod'
 import { eq } from 'drizzle-orm'
 import { useDb } from '../../../../db'
-import { invitations, media } from '../../../../db/schema'
+import { invitations, musicTracks } from '../../../../db/schema'
 import { assertOwnerOr404 } from '../../../../utils/ownership'
-import { mediaBelongsToInvitation } from '../../../../utils/media-belongs'
+import { rowBelongsToOwner } from '../../../../utils/belongs'
 
-const body = z.object({ musicMediaId: z.string().uuid().nullable() })
+const body = z.object({ musicTrackId: z.string().uuid().nullable() })
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')!
@@ -17,16 +17,13 @@ export default defineEventHandler(async (event) => {
 
   const parsed = body.safeParse(await readBody(event))
   if (!parsed.success) throw createError({ statusCode: 400, message: 'Invalid input' })
-  const { musicMediaId } = parsed.data
+  const { musicTrackId } = parsed.data
 
-  if (musicMediaId !== null) {
-    const [m] = await db.select({ id: media.id, type: media.type, invitationId: media.invitationId })
-      .from(media).where(eq(media.id, musicMediaId)).limit(1)
-    if (!mediaBelongsToInvitation(m ?? null, id, 'audio')) {
-      throw createError({ statusCode: 400, message: 'Invalid media' })
-    }
+  if (musicTrackId !== null) {
+    const [t] = await db.select({ ownerId: musicTracks.ownerId }).from(musicTracks).where(eq(musicTracks.id, musicTrackId)).limit(1)
+    if (!rowBelongsToOwner(t ?? null, session.user?.id ?? '')) throw createError({ statusCode: 400, message: 'Invalid track' })
   }
 
-  await db.update(invitations).set({ musicMediaId, updatedAt: new Date() }).where(eq(invitations.id, id))
-  return { ok: true, musicMediaId }
+  await db.update(invitations).set({ musicTrackId, updatedAt: new Date() }).where(eq(invitations.id, id))
+  return { ok: true, musicTrackId }
 })

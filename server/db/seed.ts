@@ -2,9 +2,10 @@ import 'dotenv/config'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { useDb } from './index'
-import { users, themes, invitations, guests, media } from './schema'
+import { users, themes, invitations, guests, musicTracks } from './schema'
 import { hashUserPassword } from '../utils/password'
 import { SECTION_TYPES, defaultContent } from '../registry/sections'
+import { CURATED_THEMES } from '../theme/curated-themes'
 
 function seedContent(type: string, base: any) {
   if (type === 'hero') return { ...base, title: 'The Wedding Of', coupleName: 'Willy & Debby', date: '2026-09-01' }
@@ -18,11 +19,10 @@ async function main() {
   const [owner] = await db.insert(users).values({
     email: 'demo@lovree.com', passwordHash: await hashUserPassword('password123'), name: 'Demo Owner',
   }).returning()
-  const [theme] = await db.insert(themes).values({
-    name: 'Radiant Love',
-    tokens: { color: { primary: '#8b5e3c', secondary: '#c8a97e' }, font: { heading: 'Cormorant Garamond', body: 'Poppins' } },
-    previewImage: null,
-  }).returning()
+  const insertedThemes = await db.insert(themes)
+    .values(CURATED_THEMES.map((t) => ({ name: t.name, tokens: t.tokens, previewImage: null })))
+    .returning()
+  const theme = insertedThemes[0] // Radiant Love (default/demo)
 
   const doc = {
     sections: SECTION_TYPES.map((type) => ({
@@ -36,11 +36,11 @@ async function main() {
     draftDocument: doc, publishedDocument: doc, publishedAt: new Date(),
   }).returning()
 
-  const [song] = await db.insert(media).values({
-    invitationId: inv!.id, type: 'audio', r2Key: 'audio/demo.mp3',
-    url: 'https://media.lovree.com/audio/demo.mp3', meta: {},
+  const [song] = await db.insert(musicTracks).values({
+    ownerId: owner!.id, name: 'Lagu Demo', r2Key: 'music/demo.mp3',
+    url: 'https://media.lovree.com/audio/demo.mp3',
   }).returning()
-  await db.update(invitations).set({ musicMediaId: song!.id }).where(eq(invitations.id, inv!.id))
+  await db.update(invitations).set({ musicTrackId: song!.id }).where(eq(invitations.id, inv!.id))
 
   await db.insert(guests).values({ invitationId: inv!.id, name: 'Budi Santoso', code: 'budi' })
   console.log('Seeded invitation: /u/demo-wedding')
