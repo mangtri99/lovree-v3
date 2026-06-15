@@ -9,7 +9,7 @@ import { CURATED_THEMES } from '../theme/curated-themes'
 
 function seedContent(type: string, base: any) {
   if (type === 'hero') return { ...base, title: 'The Wedding Of', coupleName: 'Willy & Debby', date: '2026-09-01' }
-  if (type === 'countdown') return { ...base, targetDate: '2026-09-01T08:00:00' }
+  if (type === 'countdown') return { ...base, targetDate: '2026-09-01' }
   if (type === 'quote') return { ...base, text: 'Cinta sejati tidak pernah berakhir.', source: 'QS Ar-Rum: 21' }
   return base
 }
