@@ -82,3 +82,16 @@ export const media = pgTable('media', {
   meta: jsonb('meta').notNull().default({}),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 })
+
+export const invitationWords = pgTable('invitation_words', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  type: text('type').notNull(),
+  openingGreeting: text('opening_greeting').notNull().default(''),
+  openingBody: text('opening_body').notNull().default(''),
+  closingGreeting: text('closing_greeting').notNull().default(''),
+  closingBody: text('closing_body').notNull().default(''),
+  quote: text('quote').notNull().default(''),
+  quoteSource: text('quote_source').notNull().default(''),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+})
