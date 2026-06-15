@@ -2,7 +2,7 @@ import 'dotenv/config'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { useDb } from './index'
-import { users, themes, invitations, guests, musicTracks } from './schema'
+import { users, themes, invitations, guests, musicTracks, invitationWords } from './schema'
 import { hashUserPassword } from '../utils/password'
 import { SECTION_TYPES, defaultContent } from '../registry/sections'
 import { CURATED_THEMES } from '../theme/curated-themes'
@@ -29,6 +29,14 @@ async function main() {
       id: nanoid(), type, enabled: true, content: seedContent(type, defaultContent(type)),
     })),
   }
+
+  await db.insert(invitationWords).values([
+    { name: 'Pernikahan — Klasik', type: 'wedding', openingGreeting: 'Om Swastiastu', openingBody: 'Dengan penuh suka cita kami mengundang Bapak/Ibu/Saudara/i pada hari bahagia pernikahan kami.', closingGreeting: 'Terima kasih', closingBody: 'Atas kehadiran dan doa restunya, kami ucapkan terima kasih.', quote: 'Cinta sejati tidak pernah berakhir.', quoteSource: 'QS Ar-Rum: 21' },
+    { name: 'Metatah — Klasik', type: 'metatah', openingGreeting: 'Om Swastiastu', openingBody: 'Kami mengundang Bapak/Ibu/Saudara/i pada upacara Metatah putra/putri kami.', closingGreeting: 'Terima kasih', closingBody: 'Atas kehadiran dan doa restunya, kami ucapkan terima kasih.', quote: '', quoteSource: '' },
+    { name: '3 Bulanan — Klasik', type: 'baby_3mo', openingGreeting: 'Om Swastiastu', openingBody: 'Dengan penuh rasa syukur kami mengundang Bapak/Ibu/Saudara/i pada upacara tiga bulanan putra/putri kami.', closingGreeting: 'Terima kasih', closingBody: 'Atas kehadiran dan doa restunya, kami ucapkan terima kasih.', quote: '', quoteSource: '' },
+    { name: 'Ulang Tahun — Ceria', type: 'birthday', openingGreeting: 'Halo!', openingBody: 'Dengan senang hati kami mengundang kamu untuk merayakan ulang tahun bersama kami.', closingGreeting: 'Sampai jumpa', closingBody: 'Kehadiranmu adalah hadiah terbaik!', quote: '', quoteSource: '' },
+    { name: 'Pernikahan + Metatah — Klasik', type: 'wedding_metatah', openingGreeting: 'Om Swastiastu', openingBody: 'Kami mengundang Bapak/Ibu/Saudara/i pada upacara pernikahan dan metatah keluarga kami.', closingGreeting: 'Terima kasih', closingBody: 'Atas kehadiran dan doa restunya, kami haturkan terima kasih.', quote: '', quoteSource: '' },
+  ])
 
   const [inv] = await db.insert(invitations).values({
     ownerId: owner!.id, slug: 'demo-wedding', type: 'wedding', themeId: theme!.id,
