@@ -15,6 +15,7 @@ const heroSchema = z.object({
   title: z.string().default(''),
   coupleName: z.string().default(''),
   date: z.string().default(''),
+  dateFormat: z.string().default('DD MMMM YYYY'),
 })
 const openingSchema = z.object({
   greeting: z.string().default(''),
@@ -34,6 +35,7 @@ const coupleSchema = z.object({
 const eventItemSchema = z.object({
   name: z.string().default(''),
   date: z.string().default(''),
+  dateFormat: z.string().default('DD MMMM YYYY'),
   timeStart: z.string().default(''),
   timeEnd: z.string().default(''),
   venue: z.string().default(''),
@@ -54,7 +56,7 @@ const loveGiftSchema = z.object({
 const gallerySchema = z.object({ items: galleryImages })
 const videoItem = z.object({ videoId: z.string().default('') })
 const videoSchema = z.object({ videos: z.array(videoItem).default([]) })
-const closingSchema = z.object({ body: z.string().default('') })
+const closingSchema = z.object({ greeting: z.string().default(''), body: z.string().default('') })
 const socialLinkSchema = z.object({ label: z.string().default(''), url: safeUrl })
 const infoSchema = z.object({
   phone: z.string().default(''),
@@ -80,6 +82,7 @@ export const sectionRegistry = {
       title: { type: 'text' as const, label: 'Judul' },
       coupleName: { type: 'text' as const, label: 'Nama Pasangan' },
       date: { type: 'date' as const, label: 'Tanggal' },
+      dateFormat: { type: 'dateformat' as const, label: 'Format Tanggal' },
     },
   },
   opening: {
@@ -118,6 +121,7 @@ export const sectionRegistry = {
         itemFields: {
           name: { type: 'text' as const, label: 'Nama Acara' },
           date: { type: 'date' as const, label: 'Tanggal' },
+          dateFormat: { type: 'dateformat' as const, label: 'Format Tanggal' },
           timeStart: { type: 'text' as const, label: 'Mulai' },
           timeEnd: { type: 'text' as const, label: 'Selesai' },
           venue: { type: 'text' as const, label: 'Tempat' },
@@ -180,6 +184,7 @@ export const sectionRegistry = {
     schema: closingSchema,
     label: 'Salam Penutup',
     fields: {
+      greeting: { type: 'text' as const, label: 'Salam' },
       body: { type: 'longtext' as const, label: 'Isi' },
     },
   },

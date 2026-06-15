@@ -68,6 +68,19 @@ describe('custom section', () => {
   })
 })
 
+describe('package A schema fields', () => {
+  it('hero defaults dateFormat', () => {
+    expect(validateContent('hero', {}).dateFormat).toBe('DD MMMM YYYY')
+  })
+  it('event item defaults dateFormat', () => {
+    const out = validateContent('event', { events: [{ name: 'Resepsi' }] })
+    expect(out.events[0].dateFormat).toBe('DD MMMM YYYY')
+  })
+  it('closing keeps greeting + body', () => {
+    expect(validateContent('closing', { greeting: 'Om Swastiastu', body: 'x' })).toEqual({ greeting: 'Om Swastiastu', body: 'x' })
+  })
+})
+
 describe('couple person photo', () => {
   it('defaults photo to an empty object', () => {
     const out = validateContent('couple', { people: [{ name: 'Willy' }] })
