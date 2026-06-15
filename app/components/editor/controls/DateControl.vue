@@ -4,6 +4,6 @@ defineEmits<{ 'update:modelValue': [string] }>()
 </script>
 <template>
   <UFormField :label="label">
-    <UInput type="datetime-local" :model-value="modelValue" class="w-full" @update:model-value="$emit('update:modelValue', String($event))" />
+    <UInput type="date" :model-value="modelValue" class="w-full" @update:model-value="$emit('update:modelValue', String($event))" />
   </UFormField>
 </template>

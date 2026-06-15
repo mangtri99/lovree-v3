@@ -6,7 +6,7 @@ const vModelInput = (tag: string) => ({
 export const nuxtUiStubs = {
   UInput: vModelInput('input'),
   UTextarea: vModelInput('textarea'),
-  USelect: { props: ['modelValue', 'items'], emits: ['update:modelValue'], template: '<select @change="$emit(\'update:modelValue\', $event.target.value)"><slot/></select>' },
+  USelect: { props: ['modelValue', 'items'], emits: ['update:modelValue'], template: '<select @change="$emit(\'update:modelValue\', $event.target.value)"><option v-for="i in items" :key="i.value" :value="i.value">{{ i.label }}</option><slot/></select>' },
   UButton: { props: ['label', 'disabled', 'icon', 'color', 'variant'], emits: ['click'], template: '<button :disabled="disabled" @click="$emit(\'click\', $event)"><slot>{{ label }}</slot></button>' },
   UCheckbox: { props: ['modelValue'], emits: ['update:modelValue'], template: '<input type="checkbox" :checked="modelValue" @change="$emit(\'update:modelValue\', $event.target.checked)" />' },
   UFormField: { props: ['label'], template: '<label><span>{{ label }}</span><slot/></label>' },

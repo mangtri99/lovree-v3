@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { galleryImages } from './field-types'
 
-export type FieldType = 'text' | 'longtext' | 'date' | 'url' | 'youtube' | 'image' | 'list' | 'gallery'
+export type FieldType = 'text' | 'longtext' | 'date' | 'url' | 'youtube' | 'image' | 'list' | 'gallery' | 'dateformat'
 export interface FieldDescriptor {
   type: FieldType
   label: string

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import FieldEditor from '../../app/components/editor/FieldEditor.vue'
 import GalleryControl from '../../app/components/editor/controls/GalleryControl.vue'
+import DateFormatControl from '../../app/components/editor/controls/DateFormatControl.vue'
 import { nuxtUiStubs } from '../helpers/nuxt-ui-stubs'
 
 const opts = { global: { stubs: nuxtUiStubs } }
@@ -21,5 +22,9 @@ describe('FieldEditor', () => {
   it('maps the gallery field type to GalleryControl', () => {
     const w = mount(FieldEditor, { props: { descriptor: { key: 'items', type: 'gallery', label: 'Foto' }, modelValue: [] }, ...opts })
     expect(w.findComponent(GalleryControl).exists()).toBe(true)
+  })
+  it('maps the dateformat field type to DateFormatControl', () => {
+    const w = mount(FieldEditor, { props: { descriptor: { key: 'dateFormat', type: 'dateformat', label: 'Format' }, modelValue: 'DD MMMM YYYY' }, ...opts })
+    expect(w.findComponent(DateFormatControl).exists()).toBe(true)
   })
 })
