@@ -22,6 +22,7 @@ export const musicTracks = pgTable('music_tracks', {
 export const themes = pgTable('themes', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
+  key: text('key').notNull().default('base'),
   tokens: jsonb('tokens').notNull(),
   previewImage: text('preview_image'),
 })
@@ -79,5 +80,18 @@ export const media = pgTable('media', {
   r2Key: text('r2_key').notNull(),
   url: text('url').notNull(),
   meta: jsonb('meta').notNull().default({}),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+})
+
+export const invitationWords = pgTable('invitation_words', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  type: text('type').notNull(),
+  openingGreeting: text('opening_greeting').notNull().default(''),
+  openingBody: text('opening_body').notNull().default(''),
+  closingGreeting: text('closing_greeting').notNull().default(''),
+  closingBody: text('closing_body').notNull().default(''),
+  quote: text('quote').notNull().default(''),
+  quoteSource: text('quote_source').notNull().default(''),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 })

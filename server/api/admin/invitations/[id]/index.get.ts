@@ -25,5 +25,6 @@ export default defineEventHandler(async (event) => {
     tokenOverrides: (inv!.tokenOverrides as any) ?? {},
     musicTrackId: inv!.musicTrackId, musicUrl,
     waTemplate: inv!.waTemplate,
+    themeKey: (theme as any)?.key ?? 'base',
   }
 })

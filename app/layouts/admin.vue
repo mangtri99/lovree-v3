@@ -13,6 +13,7 @@ const links = [
     { label: "Dashboard", icon: "i-lucide-layout-dashboard", to: "/admin" },
     { label: "Undangan", icon: "i-lucide-mail", to: "/admin/invitations" },
     { label: 'Musik', icon: 'i-lucide-music', to: '/admin/music' },
+    { label: 'Invitation Word', icon: 'i-lucide-book-text', to: '/admin/invitation-words' },
   ],
 ] satisfies NavigationMenuItem[][];
 

@@ -31,6 +31,7 @@ const tabItems = [
 const saveState = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
 const themeTokens = ref<Record<string, any>>(((data.value as any).themeTokens ?? {}) as Record<string, any>)
 const themeId = ref<string>((data.value as any).themeId ?? '')
+const themeKey = ref<string>((data.value as any).themeKey ?? 'base')
 const { data: themesList } = await useFetch<any>('/api/admin/themes')
 const themeItems = computed(() => ((themesList.value as any[]) ?? []).map((t) => ({ label: t.name, value: t.id })))
 const overrides = ref<DesignOverrides>(((data.value as any).tokenOverrides ?? {}) as DesignOverrides)
@@ -43,7 +44,7 @@ async function saveDesign() {
 watch(overrides, () => designDebouncer.schedule(), { deep: true })
 async function switchTheme(newId: string) {
   const t = ((themesList.value as any[]) ?? []).find((x) => x.id === newId)
-  if (t) themeTokens.value = t.tokens
+  if (t) { themeTokens.value = t.tokens; themeKey.value = t.key ?? 'base' }
   try { await $fetch(`/api/admin/invitations/${id}/theme`, { method: 'PATCH', body: { themeId: newId } }) } catch { /* non-fatal; preview already updated */ }
 }
 watch(themeId, (v) => { if (v) switchTheme(v) })
@@ -128,7 +129,7 @@ async function publish() {
             <UButton class="ml-auto" size="xs" :variant="showCover ? 'solid' : 'soft'" color="primary" :icon="showCover ? 'i-lucide-eye' : 'i-lucide-image'" :label="showCover ? 'Lihat Isi' : 'Lihat Cover'" @click="showCover = !showCover" />
           </div>
           <div class="min-h-0 flex-1 overflow-hidden rounded-xl border border-default bg-muted/40 p-3">
-            <EditorPreview class="h-full" :sections="editor.doc.sections" :css-vars="cssVars" :device="device" :show-cover="showCover" :music-url="musicUrl" @open="showCover = false" />
+            <EditorPreview class="h-full" :sections="editor.doc.sections" :css-vars="cssVars" :device="device" :show-cover="showCover" :music-url="musicUrl" :theme-key="themeKey" @open="showCover = false" />
           </div>
         </div>
       </div>
