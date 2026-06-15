@@ -12,7 +12,7 @@ export interface StarterConfig {
 
 const FOOTER = 'Terima kasih · Lovree'
 
-const WEDDING_SECTIONS: SectionType[] = ['hero', 'opening', 'couple', 'event', 'countdown', 'gallery', 'love_gift', 'closing', 'footer']
+const WEDDING_SECTIONS: SectionType[] = ['hero', 'opening', 'couple', 'event', 'countdown', 'gallery', 'love_gift', 'quote', 'closing', 'footer']
 
 export const STARTER_CONFIG: Record<string, StarterConfig> = {
   wedding: {
@@ -82,8 +82,28 @@ export const STARTER_SECTIONS: Record<string, SectionType[]> = Object.fromEntrie
   Object.entries(STARTER_CONFIG).map(([type, cfg]) => [type, cfg.sections]),
 )
 
-export function starterDocument(type: string): InvitationDocument {
+export interface InvitationWordContent {
+  openingGreeting?: string; openingBody?: string
+  closingGreeting?: string; closingBody?: string
+  quote?: string; quoteSource?: string
+}
+
+export function wordToContent(word: InvitationWordContent): Partial<Record<SectionType, Record<string, any>>> {
+  const opening: Record<string, any> = {}
+  if (word.openingGreeting) opening.greeting = word.openingGreeting
+  if (word.openingBody) opening.body = word.openingBody
+  const closing: Record<string, any> = {}
+  if (word.closingGreeting) closing.greeting = word.closingGreeting
+  if (word.closingBody) closing.body = word.closingBody
+  const quote: Record<string, any> = {}
+  if (word.quote) quote.text = word.quote
+  if (word.quoteSource) quote.source = word.quoteSource
+  return { opening, closing, quote }
+}
+
+export function starterDocument(type: string, word?: InvitationWordContent | null): InvitationDocument {
   const cfg = STARTER_CONFIG[type] ?? STARTER_CONFIG.wedding!
+  const wo = word ? wordToContent(word) : {}
   return {
     sections: cfg.sections.map((t) => ({
       id: nanoid(),
@@ -91,7 +111,7 @@ export function starterDocument(type: string): InvitationDocument {
       enabled: true,
       // validateContent fills schema defaults for every field, then the per-type
       // override sets the occasion-appropriate text — always schema-valid.
-      content: validateContent(t, cfg.content?.[t] ?? {}),
+      content: validateContent(t, { ...(cfg.content?.[t] ?? {}), ...((wo as any)[t] ?? {}) }),
     })),
   }
 }

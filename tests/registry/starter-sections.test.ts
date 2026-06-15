@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { starterDocument, STARTER_SECTIONS, STARTER_CONFIG } from '../../server/registry/starter-sections'
+import { starterDocument, STARTER_SECTIONS, STARTER_CONFIG, wordToContent } from '../../server/registry/starter-sections'
 import { validateContent } from '../../server/registry/sections'
 
 describe('starterDocument', () => {
@@ -43,5 +43,35 @@ describe('starterDocument', () => {
   it('baby_3mo hero title differs from wedding', () => {
     expect(starterDocument('baby_3mo').sections[0].content.title).toBe('Tiga Bulanan')
     expect(starterDocument('wedding').sections[0].content.title).toBe('The Wedding Of')
+  })
+})
+
+const WORD = { openingGreeting: 'Halo', openingBody: 'Isi pembuka', closingGreeting: 'Salam', closingBody: 'Isi penutup', quote: 'Kutipan', quoteSource: 'Sumber' }
+
+describe('wordToContent', () => {
+  it('maps non-empty fields, omits empty', () => {
+    expect(wordToContent(WORD)).toEqual({
+      opening: { greeting: 'Halo', body: 'Isi pembuka' },
+      closing: { greeting: 'Salam', body: 'Isi penutup' },
+      quote: { text: 'Kutipan', source: 'Sumber' },
+    })
+    expect(wordToContent({ openingGreeting: 'Hi' })).toEqual({ opening: { greeting: 'Hi' }, closing: {}, quote: {} })
+  })
+})
+
+describe('starterDocument with a word', () => {
+  it('seeds opening/closing/quote from the word', () => {
+    const doc = starterDocument('wedding', WORD)
+    const opening = doc.sections.find((s) => s.type === 'opening')!.content
+    const closing = doc.sections.find((s) => s.type === 'closing')!.content
+    const quote = doc.sections.find((s) => s.type === 'quote')!.content
+    expect(opening.greeting).toBe('Halo'); expect(opening.body).toBe('Isi pembuka')
+    expect(closing.greeting).toBe('Salam'); expect(closing.body).toBe('Isi penutup')
+    expect(quote.text).toBe('Kutipan'); expect(quote.source).toBe('Sumber')
+  })
+  it('keeps the type default for empty word fields', () => {
+    const def = starterDocument('wedding').sections.find((s) => s.type === 'opening')!.content
+    const seeded = starterDocument('wedding', { openingBody: '' }).sections.find((s) => s.type === 'opening')!.content
+    expect(seeded.greeting).toBe(def.greeting)
   })
 })
