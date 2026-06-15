@@ -91,3 +91,16 @@ describe('couple person photo', () => {
     expect(out.people[0].photo).toEqual({ mediaId: 'm1', url: 'https://cdn/p.jpg' })
   })
 })
+
+describe('package B schema', () => {
+  it('hero defaults backgroundImage to empty', () => {
+    expect(validateContent('hero', {}).backgroundImage).toEqual({ mediaId: '', url: '' })
+  })
+  it('hero_slideshow defaults', () => {
+    expect(validateContent('hero_slideshow', {})).toEqual({ title: '', coupleName: '', date: '', dateFormat: 'DD MMMM YYYY', images: [] })
+  })
+  it('hero_slideshow keeps valid images, drops malformed', () => {
+    const out = validateContent('hero_slideshow', { images: [{ mediaId: 'm', url: 'https://cdn/a.jpg' }, 'bogus'] })
+    expect(out.images).toEqual([{ mediaId: 'm', url: 'https://cdn/a.jpg' }])
+  })
+})

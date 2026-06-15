@@ -16,6 +16,15 @@ const heroSchema = z.object({
   coupleName: z.string().default(''),
   date: z.string().default(''),
   dateFormat: z.string().default('DD MMMM YYYY'),
+  backgroundImage: z.object({ mediaId: z.string().default(''), url: z.string().default('') }).default({ mediaId: '', url: '' }),
+})
+
+const heroSlideshowSchema = z.object({
+  title: z.string().default(''),
+  coupleName: z.string().default(''),
+  date: z.string().default(''),
+  dateFormat: z.string().default('DD MMMM YYYY'),
+  images: galleryImages,
 })
 const openingSchema = z.object({
   greeting: z.string().default(''),
@@ -83,6 +92,18 @@ export const sectionRegistry = {
       coupleName: { type: 'text' as const, label: 'Nama Pasangan' },
       date: { type: 'date' as const, label: 'Tanggal' },
       dateFormat: { type: 'dateformat' as const, label: 'Format Tanggal' },
+      backgroundImage: { type: 'image' as const, label: 'Foto Background' },
+    },
+  },
+  hero_slideshow: {
+    schema: heroSlideshowSchema,
+    label: 'Hero Slideshow',
+    fields: {
+      title: { type: 'text' as const, label: 'Judul' },
+      coupleName: { type: 'text' as const, label: 'Nama Pasangan' },
+      date: { type: 'date' as const, label: 'Tanggal' },
+      dateFormat: { type: 'dateformat' as const, label: 'Format Tanggal' },
+      images: { type: 'gallery' as const, label: 'Foto' },
     },
   },
   opening: {
