@@ -13,10 +13,11 @@ import RsvpSection from './sections/RsvpSection.vue'
 import GuestbookSection from './sections/GuestbookSection.vue'
 import FooterSection from './sections/FooterSection.vue'
 import CustomSection from './sections/CustomSection.vue'
+import HeroSlideshowSection from './sections/HeroSlideshowSection.vue'
 
 export const sectionComponents: Record<string, any> = {
   hero: HeroSection, opening: OpeningSection, couple: CoupleSection, event: EventSection,
   countdown: CountdownSection, quote: QuoteSection, love_gift: LoveGiftSection, gallery: GallerySection,
   video: VideoSection, closing: ClosingSection, info: InfoSection, rsvp: RsvpSection, guestbook: GuestbookSection, footer: FooterSection,
-  custom: CustomSection,
+  custom: CustomSection, hero_slideshow: HeroSlideshowSection,
 }
