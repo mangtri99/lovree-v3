@@ -5,6 +5,8 @@ import HeroSection from '../../app/components/invitation/sections/HeroSection.vu
 import FooterSection from '../../app/components/invitation/sections/FooterSection.vue'
 import ElegantHero from '../../app/components/invitation/themes/elegant/HeroSection.vue'
 import { sectionComponents } from '../../app/components/invitation/sectionComponents'
+import { resolveCover } from '../../app/components/invitation/themePacks'
+import CoverModal from '../../app/components/invitation/CoverModal.vue'
 
 describe('resolveSectionComponent', () => {
   it('returns the theme pack component when the theme overrides the section', () => {
@@ -30,5 +32,17 @@ describe('resolveSectionComponent', () => {
       expect(c, `dark_prada missing ${type}`).toBeTruthy()
       expect(c).not.toBe(sectionComponents[type])
     }
+  })
+})
+
+describe('resolveCover', () => {
+  it('returns the pack cover for elegant + dark_prada', () => {
+    expect(resolveCover('elegant')).not.toBe(CoverModal)
+    expect(resolveCover('elegant')).toBeTruthy()
+    expect(resolveCover('dark_prada')).not.toBe(CoverModal)
+  })
+  it('falls back to base CoverModal for base/unknown', () => {
+    expect(resolveCover('base')).toBe(CoverModal)
+    expect(resolveCover('nope')).toBe(CoverModal)
   })
 })

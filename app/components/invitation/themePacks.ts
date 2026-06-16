@@ -1,4 +1,7 @@
 import { sectionComponents as base } from './sectionComponents'
+import CoverModal from './CoverModal.vue'
+import ElegantCover from './themes/elegant/CoverModal.vue'
+import DarkPradaCover from './themes/dark_prada/CoverModal.vue'
 import ElegantHero from './themes/elegant/HeroSection.vue'
 import ElegantCouple from './themes/elegant/CoupleSection.vue'
 import ElegantMember from './themes/elegant/MemberSection.vue'
@@ -43,4 +46,10 @@ const packs: Record<string, Record<string, any>> = {
 
 export function resolveSectionComponent(themeKey: string, type: string): any | null {
   return packs[themeKey]?.[type] ?? base[type] ?? null
+}
+
+const covers: Record<string, any> = { elegant: ElegantCover, dark_prada: DarkPradaCover }
+
+export function resolveCover(themeKey: string): any {
+  return covers[themeKey] ?? CoverModal
 }
