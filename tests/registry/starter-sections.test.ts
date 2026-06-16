@@ -22,7 +22,8 @@ describe('starterDocument', () => {
     expect(types('birthday')).not.toContain('couple')
     expect(types('birthday')).not.toContain('love_gift')
     expect(types('metatah')).not.toContain('love_gift')
-    expect(types('baby_3mo')).toContain('couple')
+    expect(types('baby_3mo')).not.toContain('couple')
+    expect(types('baby_3mo')).toContain('member')
     expect(types('wedding')).toContain('love_gift')
   })
 
@@ -78,15 +79,16 @@ describe('starterDocument with a word', () => {
 
 describe('member section seeding', () => {
   const types = (t: string) => starterDocument(t).sections.map((s) => s.type)
-  it('seeds member right after couple for metatah, wedding_metatah, baby_3mo', () => {
-    for (const t of ['metatah', 'wedding_metatah', 'baby_3mo']) {
-      const list = types(t)
-      expect(list).toContain('member')
-      expect(list.indexOf('member')).toBe(list.indexOf('couple') + 1)
+  it('seeds member for metatah, wedding_metatah, baby_3mo, birthday', () => {
+    for (const t of ['metatah', 'wedding_metatah', 'baby_3mo', 'birthday']) {
+      expect(types(t), t).toContain('member')
     }
   })
-  it('does not seed member for wedding or birthday', () => {
+  it('places member right after couple in wedding_metatah (the only type with both)', () => {
+    const list = types('wedding_metatah')
+    expect(list.indexOf('member')).toBe(list.indexOf('couple') + 1)
+  })
+  it('does not seed member for wedding', () => {
     expect(types('wedding')).not.toContain('member')
-    expect(types('birthday')).not.toContain('member')
   })
 })
