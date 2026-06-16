@@ -31,7 +31,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
   <div v-if="images.length">
     <div class="relative">
       <img
-        data-main :src="images[index].url" alt=""
+        data-main :src="images[index]?.url" alt=""
         class="aspect-[4/5] w-full cursor-zoom-in rounded object-cover"
         loading="lazy" @click="openLightbox"
       />
@@ -51,7 +51,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
     </div>
 
     <div v-if="lightbox" data-lightbox class="fixed inset-0 z-[60] flex items-center justify-center bg-black/90" @click="closeLightbox">
-      <img :src="images[index].url" alt="" class="max-h-[90vh] max-w-[95vw] object-contain" @click.stop />
+      <img :src="images[index]?.url" alt="" class="max-h-[90vh] max-w-[95vw] object-contain" @click.stop />
       <button type="button" data-close aria-label="Tutup" class="absolute right-4 top-4 text-3xl text-white" @click.stop="closeLightbox">✕</button>
       <button v-if="images.length > 1" type="button" aria-label="Sebelumnya" class="absolute left-4 top-1/2 -translate-y-1/2 text-4xl text-white" @click.stop="prev">‹</button>
       <button v-if="images.length > 1" type="button" aria-label="Berikutnya" class="absolute right-4 top-1/2 -translate-y-1/2 text-4xl text-white" @click.stop="next">›</button>

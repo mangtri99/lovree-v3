@@ -45,7 +45,7 @@ describe('dark_prada group B', () => {
   })
   it('gallery renders only items with a url', () => {
     const w = mount(Gallery, { props: { content: { items: [{ mediaId: 'm', url: 'https://cdn/a.jpg' }, { mediaId: '', url: '' }] } } })
-    expect(w.findAll('img').length).toBe(1)
+    expect(w.find('[data-grid]').findAll('img').length).toBe(1)
   })
 })
 
