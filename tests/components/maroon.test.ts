@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
+import Cover from '../../app/components/invitation/themes/maroon/CoverModal.vue'
 import Hero from '../../app/components/invitation/themes/maroon/HeroSection.vue'
 import Member from '../../app/components/invitation/themes/maroon/MemberSection.vue'
 import Closing from '../../app/components/invitation/themes/maroon/ClosingSection.vue'
@@ -48,6 +49,16 @@ describe('maroon group C', () => {
   it('footer renders its text', () => {
     const w = mount(Footer, { props: { content: { text: '<b>Terima kasih</b>' } } })
     expect(w.find('b').exists()).toBe(true)
+  })
+})
+
+describe('maroon cover', () => {
+  it('renders couple + guest name and emits open', async () => {
+    const w = mount(Cover, { props: { title: 'Pernikahan', coupleName: 'Putu & Kadek', guestName: 'Budi' } })
+    expect(w.text()).toContain('Putu & Kadek')
+    expect(w.text()).toContain('Budi')
+    await w.find('button').trigger('click')
+    expect(w.emitted('open')).toBeTruthy()
   })
 })
 
