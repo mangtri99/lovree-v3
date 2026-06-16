@@ -41,6 +41,17 @@ const personSchema = z.object({
 const coupleSchema = z.object({
   people: z.array(personSchema).default([]),
 })
+const memberPersonSchema = z.object({
+  name: z.string().default(''),
+  instagram: z.string().default(''),
+  photo: z.object({ mediaId: z.string().default(''), url: z.string().default('') }).default({ mediaId: '', url: '' }),
+})
+const memberGroupSchema = z.object({
+  peoples: z.array(memberPersonSchema).default([]),
+  parents: z.string().default(''),
+  childOrder: z.string().default(''),
+})
+const memberSchema = z.object({ members: z.array(memberGroupSchema).default([]) })
 const eventItemSchema = z.object({
   name: z.string().default(''),
   date: z.string().default(''),
@@ -128,6 +139,31 @@ export const sectionRegistry = {
           address: { type: 'text' as const, label: 'Alamat' },
           instagram: { type: 'text' as const, label: 'Instagram' },
           photo: { type: 'image' as const, label: 'Foto' },
+        },
+      },
+    },
+  },
+  member: {
+    schema: memberSchema,
+    label: 'Peserta',
+    fields: {
+      members: {
+        type: 'list' as const,
+        label: 'Grup Peserta',
+        defaultItem: { peoples: [], parents: '', childOrder: '' },
+        itemFields: {
+          parents: { type: 'text' as const, label: 'Orang Tua' },
+          childOrder: { type: 'text' as const, label: 'Anak ke-' },
+          peoples: {
+            type: 'list' as const,
+            label: 'Peserta',
+            defaultItem: { name: '', instagram: '', photo: { mediaId: '', url: '' } },
+            itemFields: {
+              name: { type: 'text' as const, label: 'Nama' },
+              instagram: { type: 'text' as const, label: 'Instagram' },
+              photo: { type: 'image' as const, label: 'Foto' },
+            },
+          },
         },
       },
     },

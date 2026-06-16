@@ -110,3 +110,22 @@ describe('package C footer richtext', () => {
     expect((sectionRegistry as any).footer.fields.text.type).toBe('richtext')
   })
 })
+
+describe('member section', () => {
+  it('defaults to an empty members list', () => {
+    expect(validateContent('member', {})).toEqual({ members: [] })
+  })
+  it('round-trips a group with a participant and defaults missing fields', () => {
+    const out = validateContent('member', {
+      members: [{ parents: 'Bpk X & Ibu Y', childOrder: 'Anak ke-1', peoples: [{ name: 'A', instagram: 'a' }] }],
+    })
+    expect(out.members).toEqual([
+      { parents: 'Bpk X & Ibu Y', childOrder: 'Anak ke-1', peoples: [{ name: 'A', instagram: 'a', photo: { mediaId: '', url: '' } }] },
+    ])
+  })
+  it('is registered with the Peserta label and a nested list field', () => {
+    expect((sectionRegistry as any).member.label).toBe('Peserta')
+    expect((sectionRegistry as any).member.fields.members.type).toBe('list')
+    expect((sectionRegistry as any).member.fields.members.itemFields.peoples.type).toBe('list')
+  })
+})
