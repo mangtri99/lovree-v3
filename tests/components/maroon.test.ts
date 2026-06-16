@@ -6,6 +6,15 @@ import Member from '../../app/components/invitation/themes/maroon/MemberSection.
 import Closing from '../../app/components/invitation/themes/maroon/ClosingSection.vue'
 import Event from '../../app/components/invitation/themes/maroon/EventSection.vue'
 import Gallery from '../../app/components/invitation/themes/maroon/GallerySection.vue'
+import Countdown from '../../app/components/invitation/themes/maroon/CountdownSection.vue'
+
+describe('maroon countdown', () => {
+  it('renders the four unit labels (structurally-adapted template)', () => {
+    const w = mount(Countdown, { props: { content: { targetDate: '2030-01-01' } } })
+    const t = w.text()
+    for (const label of ['Hari', 'Jam', 'Menit', 'Detik']) expect(t).toContain(label)
+  })
+})
 import Info from '../../app/components/invitation/themes/maroon/InfoSection.vue'
 import Footer from '../../app/components/invitation/themes/maroon/FooterSection.vue'
 import Couple from '../../app/components/invitation/themes/maroon/CoupleSection.vue'
