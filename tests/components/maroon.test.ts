@@ -5,6 +5,8 @@ import Member from '../../app/components/invitation/themes/maroon/MemberSection.
 import Closing from '../../app/components/invitation/themes/maroon/ClosingSection.vue'
 import Event from '../../app/components/invitation/themes/maroon/EventSection.vue'
 import Gallery from '../../app/components/invitation/themes/maroon/GallerySection.vue'
+import Info from '../../app/components/invitation/themes/maroon/InfoSection.vue'
+import Footer from '../../app/components/invitation/themes/maroon/FooterSection.vue'
 
 describe('maroon group A', () => {
   it('hero renders couple name', () => {
@@ -32,5 +34,16 @@ describe('maroon group B', () => {
     const w = mount(Gallery, { props: { content: { title: 'Galeri', items: [{ mediaId: 'm', url: 'https://cdn/a.jpg' }] } } })
     expect(w.findComponent({ name: 'GalleryCarousel' }).exists()).toBe(true)
     expect(w.text()).toContain('Galeri')
+  })
+})
+
+describe('maroon group C', () => {
+  it('info renders phone', () => {
+    const w = mount(Info, { props: { content: { phone: '0812', socials: [{ label: 'Instagram', url: 'https://instagram.com/x' }] } } })
+    expect(w.text()).toContain('0812')
+  })
+  it('footer renders its text', () => {
+    const w = mount(Footer, { props: { content: { text: '<b>Terima kasih</b>' } } })
+    expect(w.find('b').exists()).toBe(true)
   })
 })
