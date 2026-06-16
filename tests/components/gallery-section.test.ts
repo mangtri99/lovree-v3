@@ -8,7 +8,7 @@ describe('GallerySection', () => {
       { mediaId: 'm1', url: 'https://cdn/a.jpg' },
       { mediaId: 'm2', url: 'https://cdn/b.jpg' },
     ] } } })
-    const imgs = w.findAll('img')
+    const imgs = w.find('[data-grid]').findAll('img')
     expect(imgs.length).toBe(2)
     expect(imgs[0].attributes('src')).toBe('https://cdn/a.jpg')
     expect(imgs[0].attributes('loading')).toBe('lazy')

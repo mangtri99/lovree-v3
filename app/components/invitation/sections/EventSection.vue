@@ -4,7 +4,7 @@ defineProps<{ content: { events: Array<{ name: string; date: string; dateFormat:
 </script>
 <template>
   <section class="space-y-8 px-6 py-12">
-    <div v-for="(e, i) in content.events" :key="i" class="rounded-lg p-6 text-center" style="background: var(--color-bg)">
+    <div v-for="(e, i) in content.events" :key="i" class="p-6 text-center" style="background: var(--color-bg); border-radius: var(--radius-lg)">
       <h3 class="text-xl" style="font-family: var(--font-heading); color: var(--color-primary)">{{ e.name }}</h3>
       <p class="mt-2">{{ formatDate(e.date, e.dateFormat) }}</p>
       <p v-if="e.timeStart">{{ e.timeStart }}<span v-if="e.timeEnd"> – {{ e.timeEnd }}</span></p>

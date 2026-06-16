@@ -2,6 +2,7 @@ export interface Tokens {
   color: { primary: string; secondary: string; bg: string; text: string; accent: string }
   font: { heading: string; body: string }
   radius: { sm: string; md: string; lg: string }
+  // divider: 'none' | 'line' | 'flourish'; motif: 'none' | 'corners'
   ornament: { motif: string; divider: string }
 }
 

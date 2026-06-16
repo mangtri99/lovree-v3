@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from "vue";
-const props = defineProps<{ content: { targetDate: string } }>();
+import SaveDateButton from '../../SaveDateButton.vue'
+const props = defineProps<{ content: { targetDate: string; title?: string; location?: string } }>();
 const now = ref(0);
 let timer: ReturnType<typeof setInterval>;
 onMounted(() => {
@@ -58,5 +59,6 @@ const units: Array<[string, "D" | "H" | "M" | "S"]> = [
         </div>
       </div>
     </div>
+    <SaveDateButton :title="content.title ?? ''" :date="content.targetDate" :location="content.location ?? ''" />
   </section>
 </template>

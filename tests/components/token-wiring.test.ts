@@ -1,3 +1,4 @@
+// @vitest-environment nuxt
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import HeroSection from '../../app/components/invitation/sections/HeroSection.vue'

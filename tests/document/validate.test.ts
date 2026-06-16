@@ -26,4 +26,22 @@ describe('validateDraftDocument', () => {
     const out = validateDraftDocument({ sections: [{ type: 'hero', enabled: true, content: {} } as any] })
     expect(out.sections[0].id).toBeTruthy()
   })
+
+  it('sanitizes footer richtext on write, strips script/anchor/attributes', () => {
+    const out = validateDraftDocument({
+      sections: [
+        { id: 'f', type: 'footer', enabled: true, content: { text: '<b>Hi</b><script>alert(1)</script><a href="javascript:x">x</a>' } },
+      ],
+    })
+    expect(out.sections[0].content.text).toBe('<b>Hi</b>x')
+  })
+
+  it('leaves non-richtext fields untouched', () => {
+    const out = validateDraftDocument({
+      sections: [
+        { id: 'o', type: 'opening', enabled: true, content: { body: 'plain <b>not parsed as richtext>' } },
+      ],
+    })
+    expect(out.sections[0].content.body).toBe('plain <b>not parsed as richtext>')
+  })
 })

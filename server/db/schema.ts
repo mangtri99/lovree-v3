@@ -34,6 +34,7 @@ export const invitations = pgTable('invitations', {
   type: text('type').notNull(),
   themeId: uuid('theme_id').notNull().references(() => themes.id),
   tokenOverrides: jsonb('token_overrides').notNull().default({}),
+  seo: jsonb('seo').notNull().default({ title: '', description: '', ogImage: { mediaId: '', url: '' } }),
   status: text('status').notNull().default('draft'),
   musicTrackId: uuid('music_track_id').references(() => musicTracks.id),
   waTemplate: text('wa_template').notNull().default(''),

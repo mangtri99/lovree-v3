@@ -2,7 +2,8 @@
 defineProps<{ content: { text: string } }>()
 </script>
 <template>
-  <footer class="px-6 py-10 text-center text-sm" style="background: var(--color-primary); color: white">
-    {{ content.text || 'Made with Lovree' }}
+  <footer class="px-6 py-10 text-center text-sm [&_ul]:inline-block [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:text-left" style="background: var(--color-primary); color: white">
+    <div v-if="content.text" v-html="content.text" />
+    <template v-else>Made with Lovree</template>
   </footer>
 </template>

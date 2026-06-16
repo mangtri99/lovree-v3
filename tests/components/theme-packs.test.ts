@@ -1,9 +1,12 @@
+// @vitest-environment nuxt
 import { describe, it, expect } from 'vitest'
 import { resolveSectionComponent } from '../../app/components/invitation/themePacks'
 import HeroSection from '../../app/components/invitation/sections/HeroSection.vue'
 import FooterSection from '../../app/components/invitation/sections/FooterSection.vue'
 import ElegantHero from '../../app/components/invitation/themes/elegant/HeroSection.vue'
 import { sectionComponents } from '../../app/components/invitation/sectionComponents'
+import { resolveCover } from '../../app/components/invitation/themePacks'
+import CoverModal from '../../app/components/invitation/CoverModal.vue'
 
 describe('resolveSectionComponent', () => {
   it('returns the theme pack component when the theme overrides the section', () => {
@@ -22,5 +25,33 @@ describe('resolveSectionComponent', () => {
     for (const type of Object.keys(sectionComponents)) {
       expect(resolveSectionComponent('elegant', type)).not.toBe(sectionComponents[type])
     }
+  })
+  it('dark_prada overrides every section type (full pack)', () => {
+    for (const type of Object.keys(sectionComponents)) {
+      const c = resolveSectionComponent('dark_prada', type)
+      expect(c, `dark_prada missing ${type}`).toBeTruthy()
+      expect(c).not.toBe(sectionComponents[type])
+    }
+  })
+  it('maroon overrides every section type (full pack)', () => {
+    for (const type of Object.keys(sectionComponents)) {
+      const c = resolveSectionComponent('maroon', type)
+      expect(c, `maroon missing ${type}`).toBeTruthy()
+      expect(c).not.toBe(sectionComponents[type])
+    }
+  })
+})
+
+describe('resolveCover', () => {
+  it('returns the pack cover for elegant + dark_prada', () => {
+    expect(resolveCover('elegant')).not.toBe(CoverModal)
+    expect(resolveCover('elegant')).toBeTruthy()
+    expect(resolveCover('dark_prada')).not.toBe(CoverModal)
+    expect(resolveCover('maroon')).not.toBe(CoverModal)
+    expect(resolveCover('maroon')).toBeTruthy()
+  })
+  it('falls back to base CoverModal for base/unknown', () => {
+    expect(resolveCover('base')).toBe(CoverModal)
+    expect(resolveCover('nope')).toBe(CoverModal)
   })
 })

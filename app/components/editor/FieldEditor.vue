@@ -9,6 +9,7 @@ import ImageControl from './controls/ImageControl.vue'
 import ListControl from './controls/ListControl.vue'
 import GalleryControl from './controls/GalleryControl.vue'
 import DateFormatControl from './controls/DateFormatControl.vue'
+import RichTextControl from './controls/RichTextControl.vue'
 import type { FieldEditorDescriptor } from '../../utils/field-editors'
 
 const props = defineProps<{ descriptor: FieldEditorDescriptor; modelValue: any }>()
@@ -16,7 +17,7 @@ defineEmits<{ 'update:modelValue': [any] }>()
 
 const control = computed(() => ({
   text: TextControl, longtext: LongtextControl, date: DateControl,
-  url: UrlControl, youtube: YoutubeControl, image: ImageControl, list: ListControl, gallery: GalleryControl, dateformat: DateFormatControl,
+  url: UrlControl, youtube: YoutubeControl, image: ImageControl, list: ListControl, gallery: GalleryControl, dateformat: DateFormatControl, richtext: RichTextControl,
 } as Record<string, any>)[props.descriptor.type] ?? TextControl)
 </script>
 <template>

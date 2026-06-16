@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { galleryImages } from './field-types'
 
-export type FieldType = 'text' | 'longtext' | 'date' | 'url' | 'youtube' | 'image' | 'list' | 'gallery' | 'dateformat'
+export type FieldType = 'text' | 'longtext' | 'date' | 'url' | 'youtube' | 'image' | 'list' | 'gallery' | 'dateformat' | 'richtext'
 export interface FieldDescriptor {
   type: FieldType
   label: string
@@ -16,6 +16,15 @@ const heroSchema = z.object({
   coupleName: z.string().default(''),
   date: z.string().default(''),
   dateFormat: z.string().default('DD MMMM YYYY'),
+  backgroundImage: z.object({ mediaId: z.string().default(''), url: z.string().default('') }).default({ mediaId: '', url: '' }),
+})
+
+const heroSlideshowSchema = z.object({
+  title: z.string().default(''),
+  coupleName: z.string().default(''),
+  date: z.string().default(''),
+  dateFormat: z.string().default('DD MMMM YYYY'),
+  images: galleryImages,
 })
 const openingSchema = z.object({
   greeting: z.string().default(''),
@@ -32,6 +41,17 @@ const personSchema = z.object({
 const coupleSchema = z.object({
   people: z.array(personSchema).default([]),
 })
+const memberPersonSchema = z.object({
+  name: z.string().default(''),
+  instagram: z.string().default(''),
+  photo: z.object({ mediaId: z.string().default(''), url: z.string().default('') }).default({ mediaId: '', url: '' }),
+})
+const memberGroupSchema = z.object({
+  peoples: z.array(memberPersonSchema).default([]),
+  parents: z.string().default(''),
+  childOrder: z.string().default(''),
+})
+const memberSchema = z.object({ members: z.array(memberGroupSchema).default([]) })
 const eventItemSchema = z.object({
   name: z.string().default(''),
   date: z.string().default(''),
@@ -42,7 +62,7 @@ const eventItemSchema = z.object({
   mapsUrl: safeUrl,
 })
 const eventSchema = z.object({ events: z.array(eventItemSchema).default([]) })
-const countdownSchema = z.object({ targetDate: z.string().default('') })
+const countdownSchema = z.object({ targetDate: z.string().default(''), title: z.string().default(''), location: z.string().default('') })
 const quoteSchema = z.object({ text: z.string().default(''), source: z.string().default('') })
 const bankSchema = z.object({
   bank: z.string().default(''),
@@ -53,7 +73,7 @@ const loveGiftSchema = z.object({
   note: z.string().default(''),
   banks: z.array(bankSchema).default([]),
 })
-const gallerySchema = z.object({ items: galleryImages })
+const gallerySchema = z.object({ title: z.string().default(''), items: galleryImages })
 const videoItem = z.object({ videoId: z.string().default('') })
 const videoSchema = z.object({ videos: z.array(videoItem).default([]) })
 const closingSchema = z.object({ greeting: z.string().default(''), body: z.string().default('') })
@@ -83,6 +103,18 @@ export const sectionRegistry = {
       coupleName: { type: 'text' as const, label: 'Nama Pasangan' },
       date: { type: 'date' as const, label: 'Tanggal' },
       dateFormat: { type: 'dateformat' as const, label: 'Format Tanggal' },
+      backgroundImage: { type: 'image' as const, label: 'Foto Background' },
+    },
+  },
+  hero_slideshow: {
+    schema: heroSlideshowSchema,
+    label: 'Hero Slideshow',
+    fields: {
+      title: { type: 'text' as const, label: 'Judul' },
+      coupleName: { type: 'text' as const, label: 'Nama Pasangan' },
+      date: { type: 'date' as const, label: 'Tanggal' },
+      dateFormat: { type: 'dateformat' as const, label: 'Format Tanggal' },
+      images: { type: 'gallery' as const, label: 'Foto' },
     },
   },
   opening: {
@@ -111,6 +143,31 @@ export const sectionRegistry = {
       },
     },
   },
+  member: {
+    schema: memberSchema,
+    label: 'Peserta',
+    fields: {
+      members: {
+        type: 'list' as const,
+        label: 'Grup Peserta',
+        defaultItem: { peoples: [], parents: '', childOrder: '' },
+        itemFields: {
+          parents: { type: 'text' as const, label: 'Orang Tua' },
+          childOrder: { type: 'text' as const, label: 'Anak ke-' },
+          peoples: {
+            type: 'list' as const,
+            label: 'Peserta',
+            defaultItem: { name: '', instagram: '', photo: { mediaId: '', url: '' } },
+            itemFields: {
+              name: { type: 'text' as const, label: 'Nama' },
+              instagram: { type: 'text' as const, label: 'Instagram' },
+              photo: { type: 'image' as const, label: 'Foto' },
+            },
+          },
+        },
+      },
+    },
+  },
   event: {
     schema: eventSchema,
     label: 'Detail Acara',
@@ -135,6 +192,8 @@ export const sectionRegistry = {
     label: 'Countdown',
     fields: {
       targetDate: { type: 'date' as const, label: 'Tanggal Tujuan' },
+      title: { type: 'text' as const, label: 'Judul Acara' },
+      location: { type: 'text' as const, label: 'Lokasi' },
     },
   },
   quote: {
@@ -165,6 +224,7 @@ export const sectionRegistry = {
     schema: gallerySchema,
     label: 'Galeri',
     fields: {
+      title: { type: 'text' as const, label: 'Judul Galeri' },
       items: { type: 'gallery' as const, label: 'Foto' },
     },
   },
@@ -237,7 +297,7 @@ export const sectionRegistry = {
     schema: footerSchema,
     label: 'Footer',
     fields: {
-      text: { type: 'text' as const, label: 'Teks Footer' },
+      text: { type: 'richtext' as const, label: 'Teks Footer' },
     },
   },
 } as const

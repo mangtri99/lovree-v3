@@ -6,7 +6,7 @@ defineProps<{ content: { note: string; banks: Array<{ bank: string; number: stri
     <h2 class="text-2xl" style="font-family: var(--font-heading); color: var(--color-primary)">Love Gift</h2>
     <p v-if="content.note" class="mx-auto mt-2 max-w-xl">{{ content.note }}</p>
     <div class="mx-auto mt-6 max-w-sm space-y-3">
-      <div v-for="(b, i) in content.banks" :key="i" class="rounded-lg border p-4">
+      <div v-for="(b, i) in content.banks" :key="i" class="border p-4" style="border-radius: var(--radius-lg)">
         <div class="font-semibold">{{ b.bank }}</div>
         <div class="text-lg tracking-wider">{{ b.number }}</div>
         <div class="text-sm text-gray-600">a.n. {{ b.holder }}</div>
