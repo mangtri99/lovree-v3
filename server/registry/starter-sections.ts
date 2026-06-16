@@ -13,6 +13,7 @@ export interface StarterConfig {
 const FOOTER = 'Terima kasih · Lovree'
 
 const WEDDING_SECTIONS: SectionType[] = ['hero', 'opening', 'couple', 'event', 'countdown', 'gallery', 'love_gift', 'quote', 'closing', 'footer']
+const WEDDING_METATAH_SECTIONS: SectionType[] = ['hero', 'opening', 'couple', 'member', 'event', 'countdown', 'gallery', 'love_gift', 'quote', 'closing', 'footer']
 
 export const STARTER_CONFIG: Record<string, StarterConfig> = {
   wedding: {
@@ -28,7 +29,7 @@ export const STARTER_CONFIG: Record<string, StarterConfig> = {
     },
   },
   wedding_metatah: {
-    sections: WEDDING_SECTIONS,
+    sections: WEDDING_METATAH_SECTIONS,
     content: {
       hero: { title: 'Pernikahan & Metatah' },
       opening: {
@@ -40,7 +41,7 @@ export const STARTER_CONFIG: Record<string, StarterConfig> = {
     },
   },
   metatah: {
-    sections: ['hero', 'opening', 'couple', 'event', 'countdown', 'gallery', 'closing', 'footer'],
+    sections: ['hero', 'opening', 'couple', 'member', 'event', 'countdown', 'gallery', 'closing', 'footer'],
     content: {
       hero: { title: 'Upacara Metatah' },
       opening: {
@@ -52,7 +53,7 @@ export const STARTER_CONFIG: Record<string, StarterConfig> = {
     },
   },
   baby_3mo: {
-    sections: ['hero', 'opening', 'couple', 'event', 'gallery', 'closing', 'footer'],
+    sections: ['hero', 'opening', 'couple', 'member', 'event', 'gallery', 'closing', 'footer'],
     content: {
       hero: { title: 'Tiga Bulanan' },
       opening: {

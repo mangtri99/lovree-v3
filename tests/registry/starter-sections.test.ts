@@ -75,3 +75,18 @@ describe('starterDocument with a word', () => {
     expect(seeded.greeting).toBe(def.greeting)
   })
 })
+
+describe('member section seeding', () => {
+  const types = (t: string) => starterDocument(t).sections.map((s) => s.type)
+  it('seeds member right after couple for metatah, wedding_metatah, baby_3mo', () => {
+    for (const t of ['metatah', 'wedding_metatah', 'baby_3mo']) {
+      const list = types(t)
+      expect(list).toContain('member')
+      expect(list.indexOf('member')).toBe(list.indexOf('couple') + 1)
+    }
+  })
+  it('does not seed member for wedding or birthday', () => {
+    expect(types('wedding')).not.toContain('member')
+    expect(types('birthday')).not.toContain('member')
+  })
+})
