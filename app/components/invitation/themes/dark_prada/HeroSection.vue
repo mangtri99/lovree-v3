@@ -12,7 +12,7 @@ defineProps<{
 </script>
 <template>
   <section
-    class="relative overflow-hidden px-6 py-24 text-center h-screen"
+    class="relative overflow-hidden px-6 py-24 text-center h-screen min-h-screen flex flex-col items-center justify-center"
     style="background: var(--color-bg); color: var(--color-text)"
   >
     <img

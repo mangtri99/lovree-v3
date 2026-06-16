@@ -13,7 +13,7 @@ defineProps<{
 <template>
   <section
     v-if="content.backgroundImage?.url"
-    class="relative bg-cover bg-center py-32 text-center text-white"
+    class="relative bg-cover bg-center py-32 text-center text-white min-h-screen flex flex-col items-center justify-center"
     :style="{ backgroundImage: `url(${content.backgroundImage.url})` }"
   >
     <div class="absolute inset-0 bg-black/45" />
@@ -33,7 +33,7 @@ defineProps<{
   </section>
   <section
     v-else
-    class="py-24 text-center"
+    class="py-24 text-center min-h-screen flex flex-col items-center justify-center"
     style="background: var(--color-bg); color: var(--color-text)"
   >
     <p
