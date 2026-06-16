@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-const props = defineProps<{ content: { targetDate: string } }>()
+import SaveDateButton from '../../SaveDateButton.vue'
+const props = defineProps<{ content: { targetDate: string; title?: string; location?: string } }>()
 // Starts at 0 so SSR and first client render match (all zeros); the real clock
 // starts on mount, avoiding a hydration mismatch on every page load.
 const now = ref(0)
@@ -27,5 +28,6 @@ const units: Array<[string, 'D' | 'H' | 'M' | 'S']> = [['Hari', 'D'], ['Jam', 'H
         <div class="text-xs uppercase tracking-widest">{{ label }}</div>
       </div>
     </div>
+    <SaveDateButton :title="content.title ?? ''" :date="content.targetDate" :location="content.location ?? ''" />
   </section>
 </template>
