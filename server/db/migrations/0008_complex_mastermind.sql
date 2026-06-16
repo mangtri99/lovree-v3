@@ -1,0 +1,1 @@
+ALTER TABLE "invitations" ADD COLUMN "seo" jsonb DEFAULT '{"title":"","description":"","ogImage":{"mediaId":"","url":""}}'::jsonb NOT NULL;
