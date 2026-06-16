@@ -6,6 +6,8 @@ import Member from '../../app/components/invitation/themes/dark_prada/MemberSect
 import Closing from '../../app/components/invitation/themes/dark_prada/ClosingSection.vue'
 import Event from '../../app/components/invitation/themes/dark_prada/EventSection.vue'
 import Gallery from '../../app/components/invitation/themes/dark_prada/GallerySection.vue'
+import Info from '../../app/components/invitation/themes/dark_prada/InfoSection.vue'
+import Footer from '../../app/components/invitation/themes/dark_prada/FooterSection.vue'
 
 describe('dark_prada group A', () => {
   it('hero renders title + couple name', () => {
@@ -32,5 +34,16 @@ describe('dark_prada group B', () => {
   it('gallery renders only items with a url', () => {
     const w = mount(Gallery, { props: { content: { items: [{ mediaId: 'm', url: 'https://cdn/a.jpg' }, { mediaId: '', url: '' }] } } })
     expect(w.findAll('img').length).toBe(1)
+  })
+})
+
+describe('dark_prada group C', () => {
+  it('info renders phone + social labels', () => {
+    const w = mount(Info, { props: { content: { phone: '0812', socials: [{ label: 'Instagram', url: 'https://instagram.com/x' }] } } })
+    expect(w.text()).toContain('0812')
+  })
+  it('footer renders its text', () => {
+    const w = mount(Footer, { props: { content: { text: '<b>Terima kasih</b>' } } })
+    expect(w.find('b').exists()).toBe(true)
   })
 })
