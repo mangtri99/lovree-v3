@@ -23,4 +23,11 @@ describe('resolveSectionComponent', () => {
       expect(resolveSectionComponent('elegant', type)).not.toBe(sectionComponents[type])
     }
   })
+  it('dark_prada overrides every section type (full pack)', () => {
+    for (const type of Object.keys(sectionComponents)) {
+      const c = resolveSectionComponent('dark_prada', type)
+      expect(c, `dark_prada missing ${type}`).toBeTruthy()
+      expect(c).not.toBe(sectionComponents[type])
+    }
+  })
 })
