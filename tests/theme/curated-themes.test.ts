@@ -29,3 +29,28 @@ describe('CURATED_THEMES', () => {
     expect(t!.tokens.color.bg).toBe('#1b1a17')
   })
 })
+
+describe('ornament + radius tokens', () => {
+  const DIVIDERS = ['none', 'line', 'flourish']
+  const MOTIFS = ['none', 'corners']
+  it('every theme declares valid ornament divider/motif', () => {
+    for (const t of CURATED_THEMES) {
+      expect(t.tokens.ornament, t.name).toBeTruthy()
+      expect(DIVIDERS, `${t.name}.divider`).toContain(t.tokens.ornament!.divider)
+      expect(MOTIFS, `${t.name}.motif`).toContain(t.tokens.ornament!.motif)
+    }
+  })
+  it('radius values are pixel strings when present', () => {
+    for (const t of CURATED_THEMES) {
+      if (!t.tokens.radius) continue
+      for (const k of ['sm', 'md', 'lg'] as const) expect(t.tokens.radius[k], `${t.name}.${k}`).toMatch(/^\d+px$/)
+    }
+  })
+  it('self-styled packs opt out of divider + motif', () => {
+    for (const name of ['Elegant Noir', 'Dark Prada']) {
+      const t = CURATED_THEMES.find((x) => x.name === name)!
+      expect(t.tokens.ornament!.divider).toBe('none')
+      expect(t.tokens.ornament!.motif).toBe('none')
+    }
+  })
+})
