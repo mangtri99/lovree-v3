@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, provide } from 'vue'
-import CoverModal from './CoverModal.vue'
+import { resolveCover } from './themePacks'
 import MusicPlayer from './MusicPlayer.vue'
 import SectionRenderer from './SectionRenderer.vue'
 import OrnamentDivider from './OrnamentDivider.vue'
@@ -23,6 +23,7 @@ const styleStr = computed(() => {
   return `${vars}; font-family: var(--font-body)`
 })
 const hero = computed(() => props.data.sections.find((s) => s.type === 'hero')?.content ?? { title: '', coupleName: '' })
+const cover = computed(() => resolveCover(props.data.themeKey ?? 'base'))
 
 const divider = computed(() => props.data.cssVars['--ornament-divider'] ?? 'none')
 const motif = computed(() => props.data.cssVars['--ornament-motif'] ?? 'none')
@@ -38,7 +39,7 @@ onUnmounted(() => { document.body.style.overflow = '' })
 
 <template>
   <div class="invitation relative min-h-screen" :style="styleStr">
-    <CoverModal v-if="!opened" :title="hero.title" :couple-name="hero.coupleName" :guest-name="guestName" @open="open" />
+    <component :is="cover" v-if="!opened" :title="hero.title" :couple-name="hero.coupleName" :guest-name="guestName" @open="open" />
     <template v-if="opened">
       <template v-for="(s, i) in data.sections" :key="i">
         <OrnamentDivider v-if="i > 0" :variant="divider" />

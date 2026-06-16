@@ -40,4 +40,10 @@ describe('InvitationRoot', () => {
     await w.findComponent({ name: 'CoverModal' }).vm.$emit('open')
     expect(w.findAll('[data-motif-corner]').length).toBe(0)
   })
+  it('renders the dark_prada cover when themeKey is dark_prada', () => {
+    const d = { ...data, themeKey: 'dark_prada' }
+    const w = mount(InvitationRoot, { props: { data: d, guestName: 'Budi' } })
+    expect(w.findComponent({ name: 'DarkPradaCover' }).exists()).toBe(true)
+    expect(w.findComponent({ name: 'CoverModal' }).exists()).toBe(false)
+  })
 })
