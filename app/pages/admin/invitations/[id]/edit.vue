@@ -7,6 +7,7 @@ import SectionList from '~/components/editor/SectionList.vue'
 import EditorPreview from '~/components/editor/EditorPreview.vue'
 import SaveStatus from '~/components/editor/SaveStatus.vue'
 import InvitationSettings from '~/components/editor/InvitationSettings.vue'
+import SeoSettings from '~/components/editor/SeoSettings.vue'
 import DesignControls from '~/components/editor/DesignControls.vue'
 import { resolveTokens, tokensToCssVars } from '~~/server/theme/tokens'
 import type { DesignOverrides } from '~~/server/theme/design-validate'
@@ -55,6 +56,12 @@ const musicTrackId = ref<string | null>((data.value as any).musicTrackId ?? null
 async function setMusic(trackId: string | null) {
   musicTrackId.value = trackId
   await $fetch(`/api/admin/invitations/${id}/music`, { method: 'PATCH', body: { musicTrackId: trackId } })
+}
+
+const seo = ref((data.value as any).seo ?? { title: '', description: '', ogImage: { mediaId: '', url: '' } })
+async function saveSeo(next: { title: string; description: string; ogImage: { mediaId: string; url: string } }) {
+  seo.value = next
+  try { await $fetch(`/api/admin/invitations/${id}/seo`, { method: 'PATCH', body: next }) } catch { /* non-fatal */ }
 }
 
 async function save() {
@@ -109,6 +116,7 @@ async function publish() {
             <template #tampilan>
               <div class="space-y-4 pt-4">
                 <InvitationSettings :tracks="tracks" :music-track-id="musicTrackId" :on-set-music="setMusic" @update:music-url="musicUrl = $event" />
+                <SeoSettings :seo="seo" :on-save="saveSeo" />
                 <div class="rounded border border-default bg-default p-3">
                   <UFormField label="Tema">
                     <USelect v-model="themeId" :items="themeItems" class="w-full" />
