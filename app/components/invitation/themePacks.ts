@@ -2,6 +2,24 @@ import { sectionComponents as base } from './sectionComponents'
 import CoverModal from './CoverModal.vue'
 import ElegantCover from './themes/elegant/CoverModal.vue'
 import DarkPradaCover from './themes/dark_prada/CoverModal.vue'
+import MaroonCover from './themes/maroon/CoverModal.vue'
+import MaroonHero from './themes/maroon/HeroSection.vue'
+import MaroonCouple from './themes/maroon/CoupleSection.vue'
+import MaroonMember from './themes/maroon/MemberSection.vue'
+import MaroonOpening from './themes/maroon/OpeningSection.vue'
+import MaroonClosing from './themes/maroon/ClosingSection.vue'
+import MaroonQuote from './themes/maroon/QuoteSection.vue'
+import MaroonCustom from './themes/maroon/CustomSection.vue'
+import MaroonFooter from './themes/maroon/FooterSection.vue'
+import MaroonEvent from './themes/maroon/EventSection.vue'
+import MaroonLoveGift from './themes/maroon/LoveGiftSection.vue'
+import MaroonInfo from './themes/maroon/InfoSection.vue'
+import MaroonCountdown from './themes/maroon/CountdownSection.vue'
+import MaroonGallery from './themes/maroon/GallerySection.vue'
+import MaroonVideo from './themes/maroon/VideoSection.vue'
+import MaroonRsvp from './themes/maroon/RsvpSection.vue'
+import MaroonGuestbook from './themes/maroon/GuestbookSection.vue'
+import MaroonHeroSlideshow from './themes/maroon/HeroSlideshowSection.vue'
 import ElegantHero from './themes/elegant/HeroSection.vue'
 import ElegantCouple from './themes/elegant/CoupleSection.vue'
 import ElegantMember from './themes/elegant/MemberSection.vue'
@@ -42,13 +60,14 @@ import DarkPradaHeroSlideshow from './themes/dark_prada/HeroSlideshowSection.vue
 const packs: Record<string, Record<string, any>> = {
   elegant: { hero: ElegantHero, couple: ElegantCouple, member: ElegantMember, opening: ElegantOpening, closing: ElegantClosing, quote: ElegantQuote, custom: ElegantCustom, footer: ElegantFooter, event: ElegantEvent, love_gift: ElegantLoveGift, info: ElegantInfo, countdown: ElegantCountdown, gallery: ElegantGallery, video: ElegantVideo, rsvp: ElegantRsvp, guestbook: ElegantGuestbook, hero_slideshow: ElegantHeroSlideshow },
   dark_prada: { hero: DarkPradaHero, couple: DarkPradaCouple, member: DarkPradaMember, opening: DarkPradaOpening, closing: DarkPradaClosing, quote: DarkPradaQuote, custom: DarkPradaCustom, footer: DarkPradaFooter, event: DarkPradaEvent, love_gift: DarkPradaLoveGift, info: DarkPradaInfo, countdown: DarkPradaCountdown, gallery: DarkPradaGallery, video: DarkPradaVideo, rsvp: DarkPradaRsvp, guestbook: DarkPradaGuestbook, hero_slideshow: DarkPradaHeroSlideshow },
+  maroon: { hero: MaroonHero, couple: MaroonCouple, member: MaroonMember, opening: MaroonOpening, closing: MaroonClosing, quote: MaroonQuote, custom: MaroonCustom, footer: MaroonFooter, event: MaroonEvent, love_gift: MaroonLoveGift, info: MaroonInfo, countdown: MaroonCountdown, gallery: MaroonGallery, video: MaroonVideo, rsvp: MaroonRsvp, guestbook: MaroonGuestbook, hero_slideshow: MaroonHeroSlideshow },
 }
 
 export function resolveSectionComponent(themeKey: string, type: string): any | null {
   return packs[themeKey]?.[type] ?? base[type] ?? null
 }
 
-const covers: Record<string, any> = { elegant: ElegantCover, dark_prada: DarkPradaCover }
+const covers: Record<string, any> = { elegant: ElegantCover, dark_prada: DarkPradaCover, maroon: MaroonCover }
 
 export function resolveCover(themeKey: string): any {
   return covers[themeKey] ?? CoverModal

@@ -33,6 +33,13 @@ describe('resolveSectionComponent', () => {
       expect(c).not.toBe(sectionComponents[type])
     }
   })
+  it('maroon overrides every section type (full pack)', () => {
+    for (const type of Object.keys(sectionComponents)) {
+      const c = resolveSectionComponent('maroon', type)
+      expect(c, `maroon missing ${type}`).toBeTruthy()
+      expect(c).not.toBe(sectionComponents[type])
+    }
+  })
 })
 
 describe('resolveCover', () => {
@@ -40,6 +47,8 @@ describe('resolveCover', () => {
     expect(resolveCover('elegant')).not.toBe(CoverModal)
     expect(resolveCover('elegant')).toBeTruthy()
     expect(resolveCover('dark_prada')).not.toBe(CoverModal)
+    expect(resolveCover('maroon')).not.toBe(CoverModal)
+    expect(resolveCover('maroon')).toBeTruthy()
   })
   it('falls back to base CoverModal for base/unknown', () => {
     expect(resolveCover('base')).toBe(CoverModal)
