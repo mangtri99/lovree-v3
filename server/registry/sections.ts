@@ -73,7 +73,7 @@ const loveGiftSchema = z.object({
   note: z.string().default(''),
   banks: z.array(bankSchema).default([]),
 })
-const gallerySchema = z.object({ items: galleryImages })
+const gallerySchema = z.object({ title: z.string().default(''), items: galleryImages })
 const videoItem = z.object({ videoId: z.string().default('') })
 const videoSchema = z.object({ videos: z.array(videoItem).default([]) })
 const closingSchema = z.object({ greeting: z.string().default(''), body: z.string().default('') })
@@ -222,6 +222,7 @@ export const sectionRegistry = {
     schema: gallerySchema,
     label: 'Galeri',
     fields: {
+      title: { type: 'text' as const, label: 'Judul Galeri' },
       items: { type: 'gallery' as const, label: 'Foto' },
     },
   },

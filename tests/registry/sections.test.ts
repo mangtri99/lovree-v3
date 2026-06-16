@@ -29,7 +29,10 @@ describe('section registry', () => {
 
 describe('gallery (images only)', () => {
   it('defaults to no items', () => {
-    expect(validateContent('gallery', {})).toEqual({ items: [] })
+    expect(validateContent('gallery', {})).toEqual({ title: '', items: [] })
+  })
+  it('gallery has a title text field', () => {
+    expect((sectionRegistry as any).gallery.fields.title.type).toBe('text')
   })
   it('coerces items to {mediaId,url}, drops non-object items, never resets', () => {
     const out = validateContent('gallery', { items: [
