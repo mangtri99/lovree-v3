@@ -1,3 +1,4 @@
+// @vitest-environment nuxt
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import InvitationRoot from '../../app/components/invitation/InvitationRoot.vue'
