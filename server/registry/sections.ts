@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { galleryImages } from './field-types'
 
-export type FieldType = 'text' | 'longtext' | 'date' | 'url' | 'youtube' | 'image' | 'list' | 'gallery' | 'dateformat'
+export type FieldType = 'text' | 'longtext' | 'date' | 'url' | 'youtube' | 'image' | 'list' | 'gallery' | 'dateformat' | 'richtext'
 export interface FieldDescriptor {
   type: FieldType
   label: string
@@ -258,7 +258,7 @@ export const sectionRegistry = {
     schema: footerSchema,
     label: 'Footer',
     fields: {
-      text: { type: 'text' as const, label: 'Teks Footer' },
+      text: { type: 'richtext' as const, label: 'Teks Footer' },
     },
   },
 } as const

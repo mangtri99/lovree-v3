@@ -104,3 +104,9 @@ describe('package B schema', () => {
     expect(out.images).toEqual([{ mediaId: 'm', url: 'https://cdn/a.jpg' }])
   })
 })
+
+describe('package C footer richtext', () => {
+  it('footer.text uses the richtext field type', () => {
+    expect((sectionRegistry as any).footer.fields.text.type).toBe('richtext')
+  })
+})
