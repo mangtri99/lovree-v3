@@ -1,8 +1,8 @@
 // Curated font allow-list. Same list drives: server-side validation of font
 // overrides, the editor dropdowns, and the global Google Fonts <link>. Names MUST
 // match Google Fonts family names exactly (they are also the CSS font-family value).
-export const HEADING_FONTS = ['Cormorant Garamond', 'Playfair Display', 'Marcellus', 'Great Vibes', 'Cinzel'] as const
-export const BODY_FONTS = ['Poppins', 'Lora', 'Nunito Sans', 'EB Garamond'] as const
+export const HEADING_FONTS = ['Cormorant Garamond', 'Playfair Display', 'Marcellus', 'Great Vibes', 'Cinzel', 'Courgette'] as const
+export const BODY_FONTS = ['Poppins', 'Lora', 'Nunito Sans', 'EB Garamond', 'DM Sans'] as const
 export const ALL_FONTS: string[] = [...new Set<string>([...HEADING_FONTS, ...BODY_FONTS])]
 
 export type HeadingFont = (typeof HEADING_FONTS)[number]

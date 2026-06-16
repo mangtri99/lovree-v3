@@ -22,4 +22,10 @@ describe('CURATED_THEMES', () => {
   it('the first theme is Radiant Love (the default/demo theme)', () => {
     expect(CURATED_THEMES[0].name).toBe('Radiant Love')
   })
+  it('includes Dark Prada with the dark_prada pack key', () => {
+    const t = CURATED_THEMES.find((x) => x.name === 'Dark Prada')
+    expect(t).toBeTruthy()
+    expect(t!.key).toBe('dark_prada')
+    expect(t!.tokens.color.bg).toBe('#1b1a17')
+  })
 })

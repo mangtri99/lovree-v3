@@ -31,4 +31,12 @@ export const CURATED_THEMES: CuratedTheme[] = [
     key: 'elegant',
     tokens: { color: { primary: '#1f2933', secondary: '#9aa5b1', bg: '#f7f5f2', text: '#2b2b2b', accent: '#b08d57' }, font: { heading: 'Playfair Display', body: 'EB Garamond' } },
   },
+  {
+    name: 'Dark Prada',
+    key: 'dark_prada',
+    tokens: {
+      color: { primary: '#fcc889', secondary: '#3a3a3a', bg: '#1b1a17', text: '#fbfbfb', accent: '#b2d0df' },
+      font: { heading: 'Courgette', body: 'DM Sans' },
+    },
+  },
 ]

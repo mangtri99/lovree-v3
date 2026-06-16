@@ -17,4 +17,11 @@ describe('curated fonts', () => {
     expect(href).toContain('family=Cormorant+Garamond')
     expect(href).toContain('family=Nunito+Sans')
   })
+  it('includes Courgette (heading) and DM Sans (body)', () => {
+    expect(HEADING_FONTS as readonly string[]).toContain('Courgette')
+    expect(BODY_FONTS as readonly string[]).toContain('DM Sans')
+    const href = googleFontsHref()
+    expect(href).toContain('family=Courgette')
+    expect(href).toContain('family=DM+Sans')
+  })
 })
