@@ -75,4 +75,14 @@ export const CURATED_THEMES: CuratedTheme[] = [
       ornament: { divider: 'none', motif: 'none' },
     },
   },
+  {
+    name: 'Marun Klasik',
+    key: 'maroon',
+    tokens: {
+      color: { primary: '#7a1f2b', secondary: '#9c6b6b', bg: '#fbf6ee', text: '#3a2326', accent: '#c0962f' },
+      font: { heading: 'Fraunces', body: 'Lora' },
+      radius: { sm: '4px', md: '6px', lg: '8px' },
+      ornament: { divider: 'none', motif: 'none' },
+    },
+  },
 ]

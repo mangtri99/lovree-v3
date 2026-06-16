@@ -24,4 +24,8 @@ describe('curated fonts', () => {
     expect(href).toContain('family=Courgette')
     expect(href).toContain('family=DM+Sans')
   })
+  it('includes Fraunces (heading)', () => {
+    expect(HEADING_FONTS as readonly string[]).toContain('Fraunces')
+    expect(googleFontsHref()).toContain('family=Fraunces')
+  })
 })

@@ -28,6 +28,14 @@ describe('CURATED_THEMES', () => {
     expect(t!.key).toBe('dark_prada')
     expect(t!.tokens.color.bg).toBe('#1b1a17')
   })
+  it('includes Marun Klasik (maroon pack, opts out of global ornament)', () => {
+    const t = CURATED_THEMES.find((x) => x.name === 'Marun Klasik')
+    expect(t).toBeTruthy()
+    expect(t!.key).toBe('maroon')
+    expect(t!.tokens.color.bg).toBe('#fbf6ee')
+    expect(t!.tokens.ornament!.divider).toBe('none')
+    expect(t!.tokens.ornament!.motif).toBe('none')
+  })
 })
 
 describe('ornament + radius tokens', () => {
