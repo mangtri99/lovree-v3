@@ -1,6 +1,7 @@
 import HeroSection from './sections/HeroSection.vue'
 import OpeningSection from './sections/OpeningSection.vue'
 import CoupleSection from './sections/CoupleSection.vue'
+import MemberSection from './sections/MemberSection.vue'
 import EventSection from './sections/EventSection.vue'
 import CountdownSection from './sections/CountdownSection.vue'
 import QuoteSection from './sections/QuoteSection.vue'
@@ -16,7 +17,7 @@ import CustomSection from './sections/CustomSection.vue'
 import HeroSlideshowSection from './sections/HeroSlideshowSection.vue'
 
 export const sectionComponents: Record<string, any> = {
-  hero: HeroSection, opening: OpeningSection, couple: CoupleSection, event: EventSection,
+  hero: HeroSection, opening: OpeningSection, couple: CoupleSection, member: MemberSection, event: EventSection,
   countdown: CountdownSection, quote: QuoteSection, love_gift: LoveGiftSection, gallery: GallerySection,
   video: VideoSection, closing: ClosingSection, info: InfoSection, rsvp: RsvpSection, guestbook: GuestbookSection, footer: FooterSection,
   custom: CustomSection, hero_slideshow: HeroSlideshowSection,
