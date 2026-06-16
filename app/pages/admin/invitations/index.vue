@@ -2,13 +2,11 @@
 import { ref, computed, watch } from "vue";
 import { slugify } from "~~/server/utils/slug";
 import type { TableColumn } from "@nuxt/ui";
+import ThemePicker from "~/components/theme/ThemePicker.vue";
 definePageMeta({ layout: "admin", middleware: "admin" });
 
 const { data: list } = await useFetch("/api/admin/invitations");
 const { data: themes } = await useFetch<any>("/api/admin/themes");
-const themeItems = computed(() =>
-  ((themes.value as any[]) ?? []).map((t) => ({ label: t.name, value: t.id })),
-);
 
 const open = ref(false);
 const title = ref("");
@@ -243,7 +241,7 @@ async function create() {
               <USelect v-model="type" :items="typeItems" class="w-full" />
             </UFormField>
             <UFormField label="Tema" required>
-              <USelect v-model="themeId" :items="themeItems" class="w-full" />
+              <ThemePicker :themes="(themes as any[]) ?? []" v-model="themeId" />
             </UFormField>
             <UFormField label="Template Konten" required>
               <USelect

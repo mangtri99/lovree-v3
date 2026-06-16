@@ -9,6 +9,7 @@ import SaveStatus from '~/components/editor/SaveStatus.vue'
 import InvitationSettings from '~/components/editor/InvitationSettings.vue'
 import SeoSettings from '~/components/editor/SeoSettings.vue'
 import DesignControls from '~/components/editor/DesignControls.vue'
+import ThemePicker from '~/components/theme/ThemePicker.vue'
 import { resolveTokens, tokensToCssVars } from '~~/server/theme/tokens'
 import type { DesignOverrides } from '~~/server/theme/design-validate'
 
@@ -34,7 +35,6 @@ const themeTokens = ref<Record<string, any>>(((data.value as any).themeTokens ??
 const themeId = ref<string>((data.value as any).themeId ?? '')
 const themeKey = ref<string>((data.value as any).themeKey ?? 'base')
 const { data: themesList } = await useFetch<any>('/api/admin/themes')
-const themeItems = computed(() => ((themesList.value as any[]) ?? []).map((t) => ({ label: t.name, value: t.id })))
 const overrides = ref<DesignOverrides>(((data.value as any).tokenOverrides ?? {}) as DesignOverrides)
 const cssVars = computed(() => tokensToCssVars(resolveTokens(themeTokens.value as any, overrides.value as any)))
 
@@ -119,7 +119,7 @@ async function publish() {
                 <SeoSettings :seo="seo" :on-save="saveSeo" />
                 <div class="rounded border border-default bg-default p-3">
                   <UFormField label="Tema">
-                    <USelect v-model="themeId" :items="themeItems" class="w-full" />
+                    <ThemePicker :themes="(themesList as any[]) ?? []" v-model="themeId" />
                   </UFormField>
                 </div>
                 <DesignControls v-model="overrides" :theme-tokens="themeTokens" />
