@@ -20,6 +20,12 @@ describe('section registry', () => {
     expect(out.targetDate).toBe('') // invalid -> default
   })
 
+  it('countdown defaults title + location and exposes them as text fields', () => {
+    expect(validateContent('countdown', {})).toEqual({ targetDate: '', title: '', location: '' })
+    expect((sectionRegistry as any).countdown.fields.title.type).toBe('text')
+    expect((sectionRegistry as any).countdown.fields.location.type).toBe('text')
+  })
+
   it('rejects a javascript: url in event mapsUrl (falls back to defaults)', () => {
     const out = validateContent('event', { events: [{ name: 'A', mapsUrl: 'javascript:alert(1)' }] })
     // invalid url makes the blob fail validation -> full defaults (empty events)

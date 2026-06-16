@@ -62,7 +62,7 @@ const eventItemSchema = z.object({
   mapsUrl: safeUrl,
 })
 const eventSchema = z.object({ events: z.array(eventItemSchema).default([]) })
-const countdownSchema = z.object({ targetDate: z.string().default('') })
+const countdownSchema = z.object({ targetDate: z.string().default(''), title: z.string().default(''), location: z.string().default('') })
 const quoteSchema = z.object({ text: z.string().default(''), source: z.string().default('') })
 const bankSchema = z.object({
   bank: z.string().default(''),
@@ -192,6 +192,8 @@ export const sectionRegistry = {
     label: 'Countdown',
     fields: {
       targetDate: { type: 'date' as const, label: 'Tanggal Tujuan' },
+      title: { type: 'text' as const, label: 'Judul Acara' },
+      location: { type: 'text' as const, label: 'Lokasi' },
     },
   },
   quote: {
