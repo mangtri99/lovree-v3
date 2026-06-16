@@ -7,6 +7,9 @@ import Event from '../../app/components/invitation/themes/maroon/EventSection.vu
 import Gallery from '../../app/components/invitation/themes/maroon/GallerySection.vue'
 import Info from '../../app/components/invitation/themes/maroon/InfoSection.vue'
 import Footer from '../../app/components/invitation/themes/maroon/FooterSection.vue'
+import Couple from '../../app/components/invitation/themes/maroon/CoupleSection.vue'
+import Quote from '../../app/components/invitation/themes/maroon/QuoteSection.vue'
+import HeroSlideshow from '../../app/components/invitation/themes/maroon/HeroSlideshowSection.vue'
 
 describe('maroon group A', () => {
   it('hero renders couple name', () => {
@@ -45,5 +48,21 @@ describe('maroon group C', () => {
   it('footer renders its text', () => {
     const w = mount(Footer, { props: { content: { text: '<b>Terima kasih</b>' } } })
     expect(w.find('b').exists()).toBe(true)
+  })
+})
+
+describe('maroon cohesive group', () => {
+  it('couple renders a person name', () => {
+    const w = mount(Couple, { props: { content: { people: [{ name: 'Putu', parents: '', childOrder: '', address: '', instagram: '', photo: { mediaId: '', url: '' } }] } } })
+    expect(w.text()).toContain('Putu')
+  })
+  it('quote renders text', () => {
+    const w = mount(Quote, { props: { content: { text: 'Cinta', source: 'X' } } })
+    expect(w.text()).toContain('Cinta')
+  })
+  it('hero_slideshow renders couple name + a slide image', () => {
+    const w = mount(HeroSlideshow, { props: { content: { title: 'T', coupleName: 'Putu & Kadek', date: '', dateFormat: 'DD MMMM YYYY', images: [{ mediaId: 'm', url: 'https://cdn/a.jpg' }] } } })
+    expect(w.text()).toContain('Putu & Kadek')
+    expect(w.find('img').exists()).toBe(true)
   })
 })
