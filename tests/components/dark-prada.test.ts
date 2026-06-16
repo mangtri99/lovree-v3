@@ -11,6 +11,15 @@ import Footer from '../../app/components/invitation/themes/dark_prada/FooterSect
 import Couple from '../../app/components/invitation/themes/dark_prada/CoupleSection.vue'
 import Quote from '../../app/components/invitation/themes/dark_prada/QuoteSection.vue'
 import HeroSlideshow from '../../app/components/invitation/themes/dark_prada/HeroSlideshowSection.vue'
+import Countdown from '../../app/components/invitation/themes/dark_prada/CountdownSection.vue'
+
+describe('dark_prada countdown', () => {
+  it('renders the four unit labels (structurally-adapted template)', () => {
+    const w = mount(Countdown, { props: { content: { targetDate: '2030-01-01' } } })
+    const t = w.text()
+    for (const label of ['Hari', 'Jam', 'Menit', 'Detik']) expect(t).toContain(label)
+  })
+})
 
 describe('dark_prada group A', () => {
   it('hero renders title + couple name', () => {
