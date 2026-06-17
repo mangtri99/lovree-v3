@@ -14,6 +14,7 @@ const links = [
     { label: "Undangan", icon: "i-lucide-mail", to: "/admin/invitations" },
     { label: 'Musik', icon: 'i-lucide-music', to: '/admin/music' },
     { label: 'Invitation Word', icon: 'i-lucide-book-text', to: '/admin/invitation-words' },
+    { label: 'Tema', icon: 'i-lucide-palette', to: '/admin/themes' },
   ],
 ] satisfies NavigationMenuItem[][];
 
