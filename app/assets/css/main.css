@@ -1,2 +1,21 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+
+/* Ken Burns (pan-zoom) for hero slideshow images. Continuous; respects reduced motion. */
+@keyframes kenburns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.12) translate(-1.5%, -1.5%);
+  }
+}
+.kb-pan {
+  animation: kenburns 14s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kb-pan {
+    animation: none;
+  }
+}

@@ -3,7 +3,7 @@ import { formatDate } from '~/utils/date-format'
 defineProps<{ content: { title: string; coupleName: string; date: string; dateFormat: string; backgroundImage: { mediaId: string; url: string } } }>()
 </script>
 <template>
-  <section class="relative overflow-hidden px-6 py-24 text-center" style="background: var(--color-bg); color: var(--color-text)">
+  <section class="relative overflow-hidden px-6 py-24 text-center min-h-screen flex flex-col items-center justify-center" style="background: var(--color-bg); color: var(--color-text)">
     <img v-if="content.backgroundImage?.url" :src="content.backgroundImage.url" alt="" class="absolute inset-0 h-full w-full object-cover opacity-25" loading="lazy" />
     <div class="relative z-10">
       <p v-if="content.title" class="text-sm uppercase tracking-[0.3em]" style="color: var(--color-accent)">{{ content.title }}</p>
