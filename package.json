@@ -21,6 +21,7 @@
     "@node-rs/argon2": "^2.0.2",
     "@nuxt/image": "^2.0.0",
     "@nuxt/ui": "^4.8.2",
+    "@tiptap/extension-text-align": "^3.26.1",
     "@tiptap/starter-kit": "^3.26.1",
     "@tiptap/vue-3": "^3.26.1",
     "drizzle-orm": "^0.45.2",
