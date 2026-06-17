@@ -4,6 +4,7 @@ import { resolveCover } from './themePacks'
 import MusicPlayer from './MusicPlayer.vue'
 import SectionRenderer from './SectionRenderer.vue'
 import OrnamentDivider from './OrnamentDivider.vue'
+import TheCopyright from './TheCopyright.vue'
 
 const props = defineProps<{
   data: { slug?: string; cssVars: Record<string, string>; musicUrl: string | null; sections: Array<{ type: string; content: any }>; guestbook?: Array<{ name: string; message: string; attendance: string | null }>; themeKey?: string }
@@ -45,6 +46,7 @@ onUnmounted(() => { document.body.style.overflow = '' })
         <OrnamentDivider v-if="i > 0" :variant="divider" />
         <SectionRenderer :section="s" :theme-key="data.themeKey ?? 'base'" />
       </template>
+      <TheCopyright />
       <div v-if="motif === 'corners'" class="pointer-events-none absolute inset-0 z-20" style="color: var(--color-primary)">
         <svg v-for="c in 4" :key="c" data-motif-corner aria-hidden="true" width="56" height="56" viewBox="0 0 56 56" fill="none"
           class="absolute opacity-40"
