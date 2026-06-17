@@ -18,7 +18,7 @@ const dividerItems = ['none', 'line', 'flourish'].map((v) => ({ label: v, value:
 const motifItems = ['none', 'corners'].map((v) => ({ label: v, value: v }))
 const headingItems = HEADING_FONTS.map((f) => ({ label: f, value: f }))
 const bodyItems = BODY_FONTS.map((f) => ({ label: f, value: f }))
-const keyItems = PACK_KEYS.map((p) => ({ label: p.label, value: p.value }))
+const keyItems = PACK_KEYS.map((p) => ({ label: p.label, value: p.value as string }))
 
 const preview = computed(() => ({ id: 'preview', name: name.value || 'Pratinjau', tokens: tokens.value }))
 
