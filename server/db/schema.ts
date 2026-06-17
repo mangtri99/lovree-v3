@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, jsonb, timestamp, unique } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, jsonb, timestamp, unique, boolean } from 'drizzle-orm/pg-core'
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -25,6 +25,7 @@ export const themes = pgTable('themes', {
   key: text('key').notNull().default('base'),
   tokens: jsonb('tokens').notNull(),
   previewImage: text('preview_image'),
+  builtin: boolean('builtin').notNull().default(false),
 })
 
 export const invitations = pgTable('invitations', {

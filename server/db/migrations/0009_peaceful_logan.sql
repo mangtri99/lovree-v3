@@ -1,0 +1,1 @@
+ALTER TABLE "themes" ADD COLUMN "builtin" boolean DEFAULT false NOT NULL;

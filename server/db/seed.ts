@@ -20,7 +20,7 @@ async function main() {
     email: 'demo@lovree.com', passwordHash: await hashUserPassword('password123'), name: 'Demo Owner',
   }).returning()
   const insertedThemes = await db.insert(themes)
-    .values(CURATED_THEMES.map((t) => ({ name: t.name, key: t.key ?? 'base', tokens: t.tokens, previewImage: null })))
+    .values(CURATED_THEMES.map((t) => ({ name: t.name, key: t.key ?? 'base', tokens: t.tokens, previewImage: null, builtin: true })))
     .returning()
   const theme = insertedThemes[0] // Radiant Love (default/demo)
 
